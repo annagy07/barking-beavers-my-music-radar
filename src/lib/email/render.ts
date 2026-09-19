@@ -1,0 +1,160 @@
+import "server-only";
+import type { RadarItem, RadarResult } from "@/lib/radar/types";
+
+const INK = "#131210";
+const INK_SOFT = "#4a453d";
+const PAPER = "#f6f2e9";
+const PAPER_RAISED = "#efe9db";
+const LINE = "#e3ddcd";
+const ACCENT = "#ff4a1f";
+
+function formatDate(iso: string | null) {
+  if (!iso) return null;
+  return new Date(iso).toLocaleDateString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+}
+
+function escapeHtml(input: string) {
+  return input
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function renderItem(item: RadarItem) {
+  const meta = [
+    item.venue && item.city ? `${item.venue}, ${item.city}` : item.city,
+    formatDate(item.eventDate ?? item.publishedAt),
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  return `
+    <tr>
+      <td style="padding:0 0 22px 0;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-left:3px solid ${ACCENT};">
+          <tr>
+            <td style="padding:2px 0 2px 16px;">
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:${INK_SOFT};margin-bottom:4px;">
+                ${escapeHtml(item.artistName)}
+              </div>
+              <div style="font-family:Georgia,'Times New Roman',serif;font-size:19px;line-height:1.3;color:${INK};font-weight:700;margin-bottom:4px;">
+                ${escapeHtml(item.title)}
+              </div>
+              ${meta ? `<div style="font-size:13px;color:${INK_SOFT};margin-bottom:6px;">${escapeHtml(meta)}</div>` : ""}
+              <div style="font-size:14px;line-height:1.5;color:${INK};margin-bottom:8px;">
+                ${escapeHtml(item.description)}
+              </div>
+              <div style="font-size:12.5px;line-height:1.5;color:${INK_SOFT};font-style:italic;">
+                Why this is here: ${escapeHtml(item.reasons[0] ?? "")}
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>`;
+}
+
+function renderSection(heading: string, items: RadarItem[]) {
+  if (items.length === 0) return "";
+  return `
+    <tr>
+      <td style="padding:28px 0 10px 0;">
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:${ACCENT};border-bottom:1px solid ${LINE};padding-bottom:8px;">
+          ${escapeHtml(heading)}
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          ${items.map(renderItem).join("")}
+        </table>
+      </td>
+    </tr>`;
+}
+
+export interface NewsletterMeta {
+  email: string;
+  frequencyLabel: string;
+  city: string | null;
+  unsubscribeUrl: string;
+  preferencesUrl: string;
+}
+
+export function renderNewsletterHtml(radar: RadarResult, meta: NewsletterMeta) {
+  const dateLabel = new Date(radar.generatedAt).toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+
+  const sections = [
+    renderSection("Just released", radar.sections.justReleased),
+    renderSection("Upcoming", radar.sections.upcoming),
+    renderSection("Live near you", radar.sections.liveNearYou),
+    renderSection("Tour announcements", radar.sections.tours),
+    renderSection("Presales", radar.sections.presales),
+    renderSection("Music videos", radar.sections.videos),
+    renderSection("Interviews", radar.sections.interviews),
+    renderSection("Collaborations", radar.sections.collaborations),
+    renderSection("Interesting facts", radar.sections.facts),
+    renderSection("Discovery", radar.sections.discovery),
+  ].join("");
+
+  const isEmpty = radar.items.length === 0;
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Your music radar</title>
+  </head>
+  <body style="margin:0;padding:0;background:${PAPER};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${PAPER};">
+      <tr>
+        <td align="center" style="padding:32px 16px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:${PAPER};">
+            <tr>
+              <td style="padding-bottom:20px;border-bottom:2px solid ${INK};">
+                <div style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:700;color:${INK};">Wavelength</div>
+                <div style="font-size:12px;color:${INK_SOFT};margin-top:4px;text-transform:uppercase;letter-spacing:0.08em;">Your personal music radar — ${escapeHtml(dateLabel)}</div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:18px 0 4px 0;font-size:14px;color:${INK_SOFT};">
+                ${meta.city ? `Tracking your artists and shows within reach of ${escapeHtml(meta.city)}.` : "Tracking the artists and categories you chose."}
+                No feed, no black-box algorithm — every item below says exactly why it's here.
+              </td>
+            </tr>
+            ${
+              isEmpty
+                ? `<tr><td style="padding:40px 0;font-size:14px;color:${INK_SOFT};">Nothing matched your current preferences this cycle. Loosen your filters or add more artists in <a href="${meta.preferencesUrl}" style="color:${ACCENT};">Preferences</a>.</td></tr>`
+                : sections
+            }
+            <tr>
+              <td style="padding-top:28px;border-top:1px solid ${LINE};margin-top:20px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${PAPER_RAISED};margin-top:20px;">
+                  <tr>
+                    <td style="padding:16px;font-size:12px;color:${INK_SOFT};line-height:1.6;">
+                      Sent to ${escapeHtml(meta.email)} · ${escapeHtml(meta.frequencyLabel)} digest.<br />
+                      You control every rule behind this email — edit them any time in
+                      <a href="${meta.preferencesUrl}" style="color:${ACCENT};">Preferences</a>.
+                      <a href="${meta.unsubscribeUrl}" style="color:${ACCENT};margin-left:8px;">Unsubscribe</a>
+                      <a href="/privacy" style="color:${ACCENT};margin-left:8px;">Privacy policy</a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+}

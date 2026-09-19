@@ -1,0 +1,186 @@
+// Music Radar — Prisma schema
+// Using SQLite for local MVP development. Field types (String IDs, JSON-as-string,
+// String "enums") are chosen so migration to PostgreSQL later is a drop-in:
+// swap the datasource provider, then optionally promote the string enums to
+// real Prisma `enum` types and JSON strings to native `Json` columns.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Identity & consent
+// ---------------------------------------------------------------------------
+
+model User {
+  id        String   @id @default(cuid())
+  email     String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  artistPreferences       UserArtistPreference[]
+  preference               UserPreference?
+  connectedAccounts       ConnectedAccount[]
+  consents                Consent[]
+  newsletterSubscription  NewsletterSubscription?
+}
+
+/// Consent ledger. One row per consent event, never mutated in place —
+/// withdrawing consent writes a new state rather than deleting history.
+model Consent {
+  id                  String    @id @default(cuid())
+  userId              String
+  channel             String // "email" | "whatsapp"
+  consentStatus       String // "granted" | "withdrawn"
+  consentTimestamp    DateTime  @default(now())
+  consentTextVersion  String
+  withdrawalTimestamp DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, channel])
+}
+
+/// OAuth-connected external accounts (Spotify today, Bandsintown later).
+/// We deliberately do not store raw listening history — only enough to
+/// re-derive artist preferences and to know the connection is live.
+model ConnectedAccount {
+  id                String    @id @default(cuid())
+  userId            String
+  provider          String // "spotify"
+  providerAccountId String?
+  accessToken       String?
+  refreshToken       String?
+  expiresAt         DateTime?
+  scope             String?
+  connectedAt       DateTime  @default(now())
+  disconnectedAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+}
+
+model NewsletterSubscription {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  email     String
+  status    String   @default("active") // "active" | "paused" | "unsubscribed"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------------
+// Taste graph
+// ---------------------------------------------------------------------------
+
+model Artist {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  genres    String // JSON string array, e.g. ["indie","post-punk"]
+  imageUrl  String?
+  country   String?
+  labelName String?
+  spotifyId String?
+  bio       String?
+  createdAt DateTime @default(now())
+
+  userPreferences UserArtistPreference[]
+  events          MusicEvent[]
+  relatedFrom     ArtistRelation[]       @relation("relationFrom")
+  relatedTo       ArtistRelation[]       @relation("relationTo")
+}
+
+/// Explainable discovery edges: why English Teacher gets suggested to a
+/// Fontaines D.C. fan. Mock/manually curated for the MVP.
+model ArtistRelation {
+  id           String  @id @default(cuid())
+  fromArtistId String
+  toArtistId   String
+  reasonType   String // "same_genre" | "same_label" | "shared_festival_lineup" | "support_act" | "collaboration" | "shared_producer" | "manual"
+  note         String?
+
+  fromArtist Artist @relation("relationFrom", fields: [fromArtistId], references: [id], onDelete: Cascade)
+  toArtist   Artist @relation("relationTo", fields: [toArtistId], references: [id], onDelete: Cascade)
+
+  @@unique([fromArtistId, toArtistId])
+}
+
+model UserArtistPreference {
+  id              String   @id @default(cuid())
+  userId          String
+  artistId        String
+  source          String // "manual" | "spotify_top_artist" | "spotify_followed_artist" | "spotify_saved_music"
+  relevance       String // "essential" | "interested" | "occasional"
+  baseWeight      Int // deterministic weight derived from source, user-overridable
+  blocked         Boolean  @default(false)
+  confirmedByUser Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  artist Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, artistId])
+}
+
+model UserPreference {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  contentCategories    String // JSON array string, e.g. ["new_singles","concerts"]
+  discoveryLevel       Int      @default(3) // 1 (only known artists) .. 5 (surprise me)
+  city                 String?
+  concertRadiusKm      Int      @default(50)
+  concertLookaheadDays Int      @default(90)
+  newsletterFrequency  String   @default("weekly") // "weekly" | "twice_weekly" | "daily"
+  instantPresaleAlerts Boolean  @default(false)
+  updatedAt            DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------------
+// Content graph
+// ---------------------------------------------------------------------------
+
+model MusicSource {
+  id               String @id @default(cuid())
+  name             String
+  type             String // "official_artist_site" | "official_label" | "official_youtube" | "spotify" | "venue" | "music_publication" | "unverified_social"
+  credibilityScore Int
+  url              String?
+
+  events MusicEvent[]
+}
+
+model MusicEvent {
+  id               String    @id @default(cuid())
+  type             String // "release" | "upcoming_release" | "concert" | "tour" | "presale" | "video" | "interview" | "collaboration" | "fact" | "discovery"
+  subtype          String? // release: "single" | "ep" | "album"; fact: "behind_the_scenes" | "interesting_fact"
+  artistId         String
+  title            String
+  description      String
+  publishedAt      DateTime
+  eventDate        DateTime?
+  city             String?
+  venue            String?
+  genreTags        String // JSON array string
+  sourceId         String
+  sourceUrl        String?
+  credibilityScore Int // denormalized snapshot of source credibility at ingest time
+  createdAt        DateTime  @default(now())
+
+  artist Artist      @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  source MusicSource @relation(fields: [sourceId], references: [id])
+
+  @@index([type])
+  @@index([artistId])
+}
