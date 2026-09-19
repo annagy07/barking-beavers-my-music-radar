@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Wavelength — Your personal music radar",
+  title: "Barking Beaver — Your personal music radar",
   description:
     "No feed. No black-box algorithm. Just the releases, shows and stories that matter to you.",
 };

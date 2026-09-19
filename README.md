@@ -1,4 +1,4 @@
-# Wavelength — your personal music radar
+# Barking Beaver — your personal music radar
 
 A personalized music discovery + update service. Not a streaming app, not a
 recommendation feed: you tell it which artists and categories you care

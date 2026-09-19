@@ -28,7 +28,7 @@ export default async function UnsubscribePage() {
           ) : subscription.status === "unsubscribed" ? (
             <p className="mt-4 text-sm text-ink-soft">
               You&rsquo;re unsubscribed. You won&rsquo;t receive any further
-              emails from Wavelength.
+              emails from Barking Beaver.
             </p>
           ) : (
             <>

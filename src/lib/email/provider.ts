@@ -34,7 +34,7 @@ const resendEmailProvider: EmailProvider = {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: process.env.EMAIL_FROM ?? "Wavelength <radar@example.com>",
+        from: process.env.EMAIL_FROM ?? "Barking Beaver <radar@example.com>",
         to,
         subject,
         html,

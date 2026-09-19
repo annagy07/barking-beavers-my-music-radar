@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { STEPS, StepId } from "@/lib/onboardingState";
 
 const STEP_LABELS: Record<StepId, string> = {
@@ -26,8 +27,8 @@ export function WizardShell({
     <div className="flex min-h-svh flex-col">
       <header className="border-b border-line">
         <Container className="flex h-16 items-center justify-between">
-          <Link href="/" className="font-display text-lg font-semibold tracking-tight">
-            Wavelength
+          <Link href="/">
+            <BrandMark className="text-lg" />
           </Link>
           <span className="font-mono text-xs uppercase tracking-wide text-ink-soft">
             Step {index + 1} of {STEPS.length} · {STEP_LABELS[step]}

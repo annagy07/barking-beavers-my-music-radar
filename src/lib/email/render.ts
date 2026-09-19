@@ -1,12 +1,12 @@
 import "server-only";
 import type { RadarItem, RadarResult } from "@/lib/radar/types";
 
-const INK = "#131210";
-const INK_SOFT = "#4a453d";
-const PAPER = "#f6f2e9";
-const PAPER_RAISED = "#efe9db";
-const LINE = "#e3ddcd";
-const ACCENT = "#ff4a1f";
+const INK = "#14100f";
+const INK_SOFT = "#4a4442";
+const PAPER = "#ffffff";
+const PAPER_RAISED = "#fff1f8";
+const LINE = "#f0d7e6";
+const ACCENT = "#fd6aba";
 
 function formatDate(iso: string | null) {
   if (!iso) return null;
@@ -121,7 +121,7 @@ export function renderNewsletterHtml(radar: RadarResult, meta: NewsletterMeta) {
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:${PAPER};">
             <tr>
               <td style="padding-bottom:20px;border-bottom:2px solid ${INK};">
-                <div style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:700;color:${INK};">Wavelength</div>
+                <div style="font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:900;letter-spacing:-0.01em;text-transform:uppercase;color:${ACCENT};">Barking Beaver</div>
                 <div style="font-size:12px;color:${INK_SOFT};margin-top:4px;text-transform:uppercase;letter-spacing:0.08em;">Your personal music radar — ${escapeHtml(dateLabel)}</div>
               </td>
             </tr>

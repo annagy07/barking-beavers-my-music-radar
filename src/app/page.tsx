@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Container, Eyebrow } from "@/components/ui/Container";
 import { LinkButton } from "@/components/ui/Button";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { BrandLogoImage, BrandMark } from "@/components/ui/BrandMark";
 
 const STEPS = [
   {
@@ -37,9 +38,7 @@ export default function LandingPage() {
     <>
       <header className="border-b border-line">
         <Container className="flex h-16 items-center justify-between">
-          <span className="font-display text-lg font-semibold tracking-tight">
-            Wavelength
-          </span>
+          <BrandMark className="text-lg" />
           <Link
             href="/onboarding"
             className="font-mono text-xs uppercase tracking-wide text-ink-soft hover:text-accent"
@@ -53,6 +52,7 @@ export default function LandingPage() {
         {/* Hero */}
         <section className="grain border-b border-line">
           <Container className="py-20 sm:py-28">
+            <BrandLogoImage className="mb-8 h-24 sm:h-32" priority />
             <Eyebrow>Not a streaming app. Not a feed.</Eyebrow>
             <h1 className="mt-4 max-w-3xl font-display text-5xl font-semibold leading-[1.05] tracking-tight sm:text-7xl">
               Your personal
