@@ -216,6 +216,40 @@ export interface SeedCatalogSummary {
   relations: number;
 }
 
+export interface PurgeSeedEventsSummary {
+  deleted: number;
+  notFound: number;
+}
+
+/**
+ * Removes exactly the MusicEvent rows this file's EVENTS array created —
+ * matched by the same (artist slug, type, title) key seedCatalog() dedups
+ * on — so a database that's since started pulling real content via
+ * src/lib/sources/ can drop the placeholder editorial examples without
+ * touching anything a live sync created. Safe by construction: since
+ * createEventIfNew() also dedups on that exact key, a real sync could
+ * never have inserted a second row under a key a seed event already
+ * occupied — there is nothing else this could match. Never touches
+ * Artist, MusicSource or ArtistRelation rows (the catalog itself stays,
+ * only the example news items go).
+ */
+export async function purgeSeedEvents(db: PrismaClient): Promise<PurgeSeedEventsSummary> {
+  let deleted = 0;
+  let notFound = 0;
+  for (const e of EVENTS) {
+    const artist = await db.artist.findUnique({ where: { slug: slugify(e.artist) } });
+    if (!artist) {
+      notFound++;
+      continue;
+    }
+    const result = await db.musicEvent.deleteMany({
+      where: { artistId: artist.id, type: e.type, title: e.title },
+    });
+    deleted += result.count;
+  }
+  return { deleted, notFound };
+}
+
 /**
  * Upserts the artist/source/event/relation catalog. Never deletes
  * anything and never touches User, UserArtistPreference, UserPreference,
