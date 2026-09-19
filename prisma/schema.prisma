@@ -1,15 +1,16 @@
-// Music Radar — Prisma schema
-// Using SQLite for local MVP development. Field types (String IDs, JSON-as-string,
-// String "enums") are chosen so migration to PostgreSQL later is a drop-in:
-// swap the datasource provider, then optionally promote the string enums to
-// real Prisma `enum` types and JSON strings to native `Json` columns.
+// Barking Beaver — Prisma schema
+// Runs on PostgreSQL (works great on Vercel Postgres/Neon's free tier).
+// Field types (String IDs, JSON-as-string, String "enums") were kept
+// deliberately simple during early development so the schema also ran on
+// SQLite with zero changes — they still work fine on Postgres, and could
+// later be promoted to native `enum` types / `Json` columns if desired.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

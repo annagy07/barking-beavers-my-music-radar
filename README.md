@@ -11,17 +11,22 @@ schema — a `channel` field already models it) but not implemented in V1.
 
 ## Stack
 
-Next.js (App Router) · TypeScript · Tailwind CSS v4 · Prisma + SQLite ·
+Next.js (App Router) · TypeScript · Tailwind CSS v4 · Prisma + PostgreSQL ·
 Zod · React Hook Form (available, forms currently use plain controlled
 inputs since the flows are simple) · lightweight cookie-based dev session.
 
 ## Quickstart
 
+Needs a Postgres database — any of these work: a free one from
+[Neon](https://neon.tech) or [Supabase](https://supabase.com), a Postgres
+database created from your Vercel project's Storage tab, or a local
+Postgres server.
+
 ```bash
 npm install
-cp .env.example .env      # defaults already work locally
-npx prisma migrate dev    # creates prisma/dev.db and applies the schema
-npm run seed               # 60+ artists, 30+ events, sources, relations, demo user
+cp .env.example .env             # then fill in DATABASE_URL
+npx prisma migrate dev           # applies the schema
+npm run seed                     # 60+ artists, 30+ events, sources, relations, demo user
 npm run dev
 ```
 
@@ -35,12 +40,33 @@ account (it gets its own cookie and takes over from the demo user).
 Other useful commands:
 
 ```bash
-npm run build     # production build
+npm run build     # production build (also applies pending migrations)
 npm run start     # run the production build
-npm run db:reset  # drop + recreate the SQLite db, re-run migrations + seed
+npm run db:reset  # drop + recreate the database, re-run migrations + seed
 npx tsc --noEmit  # typecheck
 npx eslint .       # lint
 ```
+
+## Deploying to Vercel
+
+1. Push this repo to GitHub (already done if you're reading this from the
+   repo) and import it in the Vercel dashboard.
+2. In the project's **Storage** tab, create a Postgres database (Neon-backed)
+   — this sets `DATABASE_URL` (and a couple of related vars) automatically.
+   Using an external Postgres (Neon/Supabase) instead works the same way:
+   just add `DATABASE_URL` yourself under **Settings → Environment Variables**.
+3. Add `APP_SESSION_SECRET` (any random string) and `NEXT_PUBLIC_APP_URL`
+   (your production URL, e.g. `https://your-app.vercel.app`) as environment
+   variables. `SPOTIFY_CLIENT_ID`/`SPOTIFY_CLIENT_SECRET`/`RESEND_API_KEY`
+   are optional — the app runs in mock mode without them.
+4. Deploy. The build script (`prisma generate && prisma migrate deploy &&
+   next build`) applies the schema to your new database automatically.
+5. Seed it once, from your machine, pointed at the production database:
+   ```bash
+   DATABASE_URL="<the same URL you set in Vercel>" npm run seed
+   ```
+   (Re-running the seed script wipes and recreates all data — including any
+   real accounts — so only run it once, right after the first deploy.)
 
 ## What's implemented
 
