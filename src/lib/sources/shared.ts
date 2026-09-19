@@ -89,6 +89,43 @@ export async function fetchWithRetry(
   }
 }
 
+/** Like createEventIfNew, but keyed on artistId+type alone (not title) and
+ * updated in place instead of skipped on a repeat sync — for event types
+ * where an artist should only ever have one current row (e.g. "the tour
+ * presale window", which gets refreshed as later syncs learn about more
+ * shows, rather than one row per venue the way concerts legitimately are). */
+export async function upsertSingletonEvent(
+  db: PrismaClient,
+  input: NewEventInput,
+): Promise<boolean> {
+  const existing = await db.musicEvent.findFirst({
+    where: { artistId: input.artistId, type: input.type },
+  });
+
+  const data = {
+    subtype: input.subtype,
+    title: input.title,
+    description: input.description,
+    publishedAt: input.publishedAt,
+    eventDate: input.eventDate,
+    city: input.city,
+    venue: input.venue,
+    sourceId: input.sourceId,
+    sourceUrl: input.sourceUrl,
+    credibilityScore: input.credibilityScore,
+  };
+
+  if (existing) {
+    await db.musicEvent.update({ where: { id: existing.id }, data });
+    return false;
+  }
+
+  await db.musicEvent.create({
+    data: { ...data, type: input.type, artistId: input.artistId, genreTags: JSON.stringify([]) },
+  });
+  return true;
+}
+
 export interface SyncResult {
   created: number;
   errors: string[];

@@ -1,5 +1,12 @@
 import type { Artist, PrismaClient } from "@prisma/client";
-import { createEventIfNew, emptyResult, fetchWithRetry, getOrCreateSource, type SyncResult } from "./shared";
+import {
+  createEventIfNew,
+  emptyResult,
+  fetchWithRetry,
+  getOrCreateSource,
+  upsertSingletonEvent,
+  type SyncResult,
+} from "./shared";
 
 interface TicketmasterVenue {
   name: string;
@@ -49,9 +56,12 @@ function matchesArtist(event: TicketmasterEvent, artistName: string): boolean {
 
 /** Fetches upcoming shows for an artist from Ticketmaster's public
  * Discovery API (self-serve API key, no partner approval needed) and
- * records each as a "concert" MusicEvent, crediting the actual venue as
- * the source. Also records any listed presale window as a "presale"
- * event. */
+ * records each as its own "concert" MusicEvent, crediting the actual venue
+ * as the source. Presales are different: a tour's presale window is
+ * usually the same across every date, so rather than one near-duplicate
+ * presale row per venue, this keeps a single "tour presale" row per artist
+ * pointing at whichever upcoming presale opens soonest, refreshed on every
+ * sync (see upsertSingletonEvent). */
 export async function syncTicketmasterForArtist(
   db: PrismaClient,
   artist: Artist,
@@ -76,6 +86,17 @@ export async function syncTicketmasterForArtist(
   }
   const json = await res.json();
   const events = (json._embedded?.events ?? []) as TicketmasterEvent[];
+
+  // Tracks the single soonest still-upcoming presale window across every
+  // show this sync found, so the artist gets one "tour presale" item
+  // instead of one near-duplicate per venue — a fan-club or general-sale
+  // presale is almost always the same window across an entire tour.
+  let soonestPresale: {
+    startDateTime: Date;
+    sourceUrl: string;
+    credibilityScore: number;
+  } | null = null;
+  let presaleShowCount = 0;
 
   for (const event of events) {
     if (!matchesArtist(event, artist.name)) continue;
@@ -107,21 +128,32 @@ export async function syncTicketmasterForArtist(
 
     for (const presale of event.sales?.presales ?? []) {
       if (!presale.startDateTime) continue;
-      const presaleCreated = await createEventIfNew(db, {
-        type: "presale",
-        artistId: artist.id,
-        title: `${presale.name ?? "Presale"}: ${artist.name} at ${venue.name}`,
-        description: `Presale window for the ${venue.city.name} show.`,
-        publishedAt: new Date(),
-        eventDate: new Date(presale.startDateTime),
-        city: venue.city.name,
-        venue: venue.name,
-        sourceId: source.id,
-        sourceUrl: event.url,
-        credibilityScore: source.credibilityScore,
-      });
-      if (presaleCreated) result.created++;
+      const startDateTime = new Date(presale.startDateTime);
+      if (Number.isNaN(startDateTime.getTime()) || startDateTime.getTime() < Date.now()) continue;
+
+      presaleShowCount++;
+      if (!soonestPresale || startDateTime.getTime() < soonestPresale.startDateTime.getTime()) {
+        soonestPresale = { startDateTime, sourceUrl: event.url, credibilityScore: source.credibilityScore };
+      }
     }
+  }
+
+  if (soonestPresale) {
+    const presaleUpdated = await upsertSingletonEvent(db, {
+      type: "presale",
+      artistId: artist.id,
+      title: `${artist.name}: tour presale`,
+      description:
+        presaleShowCount > 1
+          ? `Presale window opens for the tour (${presaleShowCount} shows currently listed).`
+          : "Presale window opens for the upcoming show.",
+      publishedAt: new Date(),
+      eventDate: soonestPresale.startDateTime,
+      sourceId: (await getOrCreateSource(db, { name: "Ticketmaster", type: "venue" })).id,
+      sourceUrl: soonestPresale.sourceUrl,
+      credibilityScore: soonestPresale.credibilityScore,
+    });
+    if (presaleUpdated) result.created++;
   }
 
   return result;

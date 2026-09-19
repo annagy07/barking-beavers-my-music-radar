@@ -65,7 +65,14 @@ async function buildRadar(
     db.musicEvent.findMany({
       where: { credibilityScore: { gte: CREDIBILITY_THRESHOLD } },
       include: { artist: true, source: true },
-      orderBy: { publishedAt: "desc" },
+      // A tiebreaker on id matters here: bulk syncs create many rows with
+      // the exact same publishedAt (new Date() at sync time), and without
+      // a deterministic secondary key Postgres can return ties in a
+      // different order on every call — which items fall inside
+      // MAX_PER_SECTION then silently changes between an onboarding
+      // preview and the live /radar a moment later, with nothing about
+      // the underlying data having changed.
+      orderBy: [{ publishedAt: "desc" }, { id: "asc" }],
     }),
     db.artistRelation.findMany({ include: { fromArtist: true, toArtist: true } }),
   ]);
@@ -203,9 +210,10 @@ async function buildRadar(
 
   items.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
-    return (
-      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-    );
+    const publishedDiff =
+      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+    if (publishedDiff !== 0) return publishedDiff;
+    return a.id.localeCompare(b.id); // stable, deterministic tiebreak
   });
 
   const capped = items.slice(0, MAX_TOTAL_ITEMS);
