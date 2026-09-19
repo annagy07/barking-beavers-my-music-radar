@@ -74,6 +74,22 @@ model ConnectedAccount {
   @@unique([userId, provider])
 }
 
+/// Holds an imported Spotify artist list (and tokens) between "Connect
+/// Spotify" and account creation at the end of onboarding — before a User
+/// exists to attach it to. Only a short-lived random id lives in the
+/// browser cookie; the payload itself lives here because a real account's
+/// follow/top/saved list is routinely too large for a cookie (~4KB limit).
+/// Rows are deleted once onboarding finishes (or left to age out otherwise).
+model SpotifyImportDraft {
+  id           String   @id @default(cuid())
+  artistsJson  String
+  accessToken  String?
+  refreshToken String?
+  scope        String?
+  connectedAt  DateTime @default(now())
+  createdAt    DateTime @default(now())
+}
+
 model NewsletterSubscription {
   id        String   @id @default(cuid())
   userId    String   @unique

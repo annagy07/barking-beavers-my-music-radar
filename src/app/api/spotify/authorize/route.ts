@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { spotifyAdapter } from "@/lib/spotify";
 import { resolveImportedArtists } from "@/lib/spotify/importArtists";
+import { DRAFT_ID_COOKIE, saveSpotifyDraft } from "@/lib/spotify/draftStore";
 import { createCodeChallenge, createCodeVerifier, createState } from "@/lib/spotify/pkce";
 
 const PKCE_COOKIE = "mr_spotify_pkce";
-const DRAFT_COOKIE = "mr_spotify_draft";
 
 export async function GET(request: NextRequest) {
   const onboardingUrl = new URL("/onboarding", request.url);
@@ -23,19 +23,14 @@ export async function GET(request: NextRequest) {
       tokenSet.accessToken,
     );
     const drafts = await resolveImportedArtists(imported);
+    const draftId = await saveSpotifyDraft(drafts, tokenSet);
 
-    cookieStore.set(
-      DRAFT_COOKIE,
-      JSON.stringify({
-        provider: "spotify",
-        connectedAt: new Date().toISOString(),
-        accessToken: tokenSet.accessToken,
-        refreshToken: tokenSet.refreshToken,
-        scope: tokenSet.scope,
-        artists: drafts,
-      }),
-      { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 30 },
-    );
+    cookieStore.set(DRAFT_ID_COOKIE, draftId, {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 30,
+    });
 
     onboardingUrl.searchParams.set("spotify", "connected");
     return NextResponse.redirect(onboardingUrl);

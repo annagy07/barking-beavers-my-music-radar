@@ -6,8 +6,7 @@ import { setSessionUserId } from "@/lib/session";
 import { grantConsent } from "@/lib/consent";
 import { SOURCE_BASE_WEIGHT } from "@/lib/constants";
 import { onboardingSubmitSchema, type OnboardingSubmitPayload } from "@/lib/validation";
-
-const SPOTIFY_DRAFT_COOKIE = "mr_spotify_draft";
+import { DRAFT_ID_COOKIE, deleteSpotifyDraft, loadSpotifyDraft } from "@/lib/spotify/draftStore";
 
 export interface OnboardingSubmitResult {
   ok: boolean;
@@ -25,15 +24,8 @@ export async function submitOnboarding(
   const data = parsed.data;
 
   const cookieStore = await cookies();
-  const spotifyDraftRaw = cookieStore.get(SPOTIFY_DRAFT_COOKIE)?.value;
-  const spotifyDraft = spotifyDraftRaw
-    ? (JSON.parse(spotifyDraftRaw) as {
-        connectedAt: string;
-        accessToken: string;
-        refreshToken?: string;
-        scope: string;
-      })
-    : null;
+  const draftId = cookieStore.get(DRAFT_ID_COOKIE)?.value;
+  const spotifyDraft = draftId ? await loadSpotifyDraft(draftId) : null;
 
   const existing = await db.user.findUnique({ where: { email: data.email } });
   const user = existing
@@ -98,17 +90,18 @@ export async function submitOnboarding(
         accessToken: spotifyDraft.accessToken,
         refreshToken: spotifyDraft.refreshToken,
         scope: spotifyDraft.scope,
-        connectedAt: new Date(spotifyDraft.connectedAt),
+        connectedAt: spotifyDraft.connectedAt,
       },
       update: {
         accessToken: spotifyDraft.accessToken,
         refreshToken: spotifyDraft.refreshToken,
         scope: spotifyDraft.scope,
-        connectedAt: new Date(spotifyDraft.connectedAt),
+        connectedAt: spotifyDraft.connectedAt,
         disconnectedAt: null,
       },
     });
-    cookieStore.delete(SPOTIFY_DRAFT_COOKIE);
+    if (draftId) await deleteSpotifyDraft(draftId);
+    cookieStore.delete(DRAFT_ID_COOKIE);
   }
 
   await grantConsent(user.id, "email");
