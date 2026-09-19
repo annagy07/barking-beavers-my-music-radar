@@ -113,6 +113,10 @@ npx eslint .       # lint
 - **Privacy controls** — disconnect Spotify, delete imported Spotify taste
   data (separate from disconnecting), pause/resume/unsubscribe newsletter,
   delete account. `/privacy` and `/unsubscribe` placeholders.
+- **Live content sync** (optional — see below) — real releases, concerts
+  and videos for artists people actually follow, pulled from Spotify,
+  Bandsintown and YouTube on a daily Vercel Cron, on top of the seeded
+  catalog.
 
 ## What's mocked
 
@@ -135,6 +139,52 @@ npx eslint .       # lint
 2. Add `http://localhost:3000/api/spotify/callback` as a Redirect URI.
 3. Set `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REDIRECT_URI`
    in `.env`.
+
+## Live content sync (real releases, concerts, videos)
+
+The seeded catalog covers a fixed set of ~60 artists. To pull **real**
+content — for whichever artists people actually follow, not just the seed
+list — `src/lib/sources/` has three independent adapters, each normalizing
+into the same `MusicEvent` shape the rest of the app already reads from:
+
+- `spotifyReleases.ts` — new singles/albums, via Spotify's Client
+  Credentials flow (public catalog data, no extra account setup — reuses
+  `SPOTIFY_CLIENT_ID`/`SPOTIFY_CLIENT_SECRET`). Only artists with a
+  `spotifyId` (set automatically once they're imported via onboarding's
+  Spotify connect) are checked; releases older than 90 days are skipped so
+  a first sync doesn't dump an artist's whole back catalog.
+- `bandsintown.ts` — upcoming shows, via Bandsintown's free public events
+  API. Needs `BANDSINTOWN_APP_ID`.
+- `youtube.ts` — new uploads, via the YouTube Data API. Needs
+  `YOUTUBE_API_KEY`. Resolves each artist's channel once (the expensive
+  search call) and caches it on `Artist.youtubeChannelId`, then reads new
+  uploads via the channel's uploads playlist (1 quota unit instead of 100)
+  on every later sync.
+
+Each adapter is independent and simply no-ops if its own env var isn't
+set — you don't need all three. All three are dedup-safe (skip an event
+that already exists for that artist/type/title) and never touch any
+User-related table.
+
+**Setup:**
+
+1. Add `BANDSINTOWN_APP_ID` (instant, free — see the comment in
+   `.env.example` for the signup link) and/or `YOUTUBE_API_KEY` (free
+   Google Cloud API key) as environment variables — locally in `.env`,
+   and in Vercel under Settings → Environment Variables for production.
+2. Add `CRON_SECRET` (any random string) the same way. It's required to
+   call `/api/cron/sync-content` at all — Vercel automatically attaches
+   it as a Bearer token to its own scheduled requests once it's set.
+3. `vercel.json` already schedules a daily sync (`/api/cron/sync-content`,
+   06:00 UTC) — Vercel picks this up automatically on deploy, no
+   dashboard configuration needed.
+4. To trigger a sync immediately instead of waiting for the schedule:
+   ```bash
+   curl -X POST -H "Authorization: Bearer <CRON_SECRET>" \
+     https://<your-domain>/api/cron/sync-content
+   ```
+   Returns a JSON summary (items created per source, plus any per-artist
+   errors) so you can see it actually pulled something.
 
 No other code changes needed — the adapter switches automatically.
 

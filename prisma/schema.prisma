@@ -115,7 +115,10 @@ model Artist {
   labelName String?
   spotifyId String?
   bio       String?
-  createdAt DateTime @default(now())
+  /// Cached to avoid re-spending YouTube search quota on every sync —
+  /// resolved once, then reused (uploads playlist id derives from it).
+  youtubeChannelId String?
+  createdAt        DateTime @default(now())
 
   userPreferences UserArtistPreference[]
   events          MusicEvent[]

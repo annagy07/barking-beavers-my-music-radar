@@ -1,0 +1,73 @@
+import type { Artist, PrismaClient } from "@prisma/client";
+import { getSpotifyAppToken } from "./spotifyClientCredentials";
+import { createEventIfNew, emptyResult, getOrCreateSource, type SyncResult } from "./shared";
+
+const MAX_RELEASE_AGE_DAYS = 90; // skip an artist's back catalog on first sync
+
+interface SpotifyAlbum {
+  id: string;
+  name: string;
+  album_type: "album" | "single" | "compilation";
+  release_date: string;
+  release_date_precision: "year" | "month" | "day";
+  external_urls: { spotify: string };
+}
+
+function parseReleaseDate(album: SpotifyAlbum): Date {
+  const raw = album.release_date;
+  if (album.release_date_precision === "day") return new Date(`${raw}T00:00:00Z`);
+  if (album.release_date_precision === "month") return new Date(`${raw}-01T00:00:00Z`);
+  return new Date(`${raw}-01-01T00:00:00Z`);
+}
+
+/** Fetches an artist's recent singles/albums from Spotify's public catalog
+ * (Client Credentials — no user login involved) and records any release
+ * from the last MAX_RELEASE_AGE_DAYS as a MusicEvent. Requires the artist
+ * to already have a spotifyId (set during onboarding's Spotify import, or
+ * left null for artists added manually/from the seed catalog). */
+export async function syncSpotifyReleasesForArtist(
+  db: PrismaClient,
+  artist: Artist,
+): Promise<SyncResult> {
+  const result = emptyResult();
+  if (!artist.spotifyId) return result;
+
+  const token = await getSpotifyAppToken();
+  const res = await fetch(
+    `https://api.spotify.com/v1/artists/${artist.spotifyId}/albums?include_groups=single,album&limit=10&market=US`,
+    { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" },
+  );
+  if (!res.ok) {
+    result.errors.push(`Spotify albums fetch failed (${res.status}) for ${artist.name}`);
+    return result;
+  }
+  const json = await res.json();
+  const albums = (json.items ?? []) as SpotifyAlbum[];
+
+  const source = await getOrCreateSource(db, { name: "Spotify", type: "spotify" });
+  const cutoff = Date.now() - MAX_RELEASE_AGE_DAYS * 24 * 60 * 60 * 1000;
+
+  for (const album of albums) {
+    const releaseDate = parseReleaseDate(album);
+    if (releaseDate.getTime() < cutoff) continue;
+
+    // Spotify doesn't have a distinct "EP" album_type; approximate it as
+    // "single" (its usual bucket for short releases) or "album".
+    const subtype = album.album_type === "album" ? "album" : "single";
+
+    const created = await createEventIfNew(db, {
+      type: "release",
+      subtype,
+      artistId: artist.id,
+      title: album.name,
+      description: `New ${album.album_type} on Spotify.`,
+      publishedAt: releaseDate,
+      sourceId: source.id,
+      sourceUrl: album.external_urls?.spotify,
+      credibilityScore: source.credibilityScore,
+    });
+    if (created) result.created++;
+  }
+
+  return result;
+}
