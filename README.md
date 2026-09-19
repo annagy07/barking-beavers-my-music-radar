@@ -24,7 +24,7 @@ Postgres server.
 
 ```bash
 npm install
-cp .env.example .env             # then fill in DATABASE_URL
+cp .env.example .env             # then fill in DATABASE_POSTGRES_URL
 npx prisma migrate dev           # applies the schema
 npm run seed                     # 60+ artists, 30+ events, sources, relations, demo user
 npm run dev
@@ -51,10 +51,17 @@ npx eslint .       # lint
 
 1. Push this repo to GitHub (already done if you're reading this from the
    repo) and import it in the Vercel dashboard.
-2. In the project's **Storage** tab, create a Postgres database (Neon-backed)
-   — this sets `DATABASE_URL` (and a couple of related vars) automatically.
-   Using an external Postgres (Neon/Supabase) instead works the same way:
-   just add `DATABASE_URL` yourself under **Settings → Environment Variables**.
+2. In the project's **Storage** tab, create/connect a Postgres database and
+   connect it to the project — this sets a `DATABASE_...` group of
+   variables automatically (the exact names depend on the provider).
+   This app reads **`DATABASE_POSTGRES_URL`** specifically:
+   - **Prisma Postgres**: creates it for you automatically alongside
+     `DATABASE_URL` (a `prisma+postgres://` Accelerate URL this app
+     doesn't use — ignore it) — no extra steps needed.
+   - **Neon / Supabase / any other Postgres**: add a variable named
+     exactly `DATABASE_POSTGRES_URL` yourself under
+     **Settings → Environment Variables**, with a normal
+     `postgresql://...` connection string as its value.
 3. Add `APP_SESSION_SECRET` (any random string) and `NEXT_PUBLIC_APP_URL`
    (your production URL, e.g. `https://your-app.vercel.app`) as environment
    variables. `SPOTIFY_CLIENT_ID`/`SPOTIFY_CLIENT_SECRET`/`RESEND_API_KEY`
@@ -63,7 +70,7 @@ npx eslint .       # lint
    next build`) applies the schema to your new database automatically.
 5. Seed it once, from your machine, pointed at the production database:
    ```bash
-   DATABASE_URL="<the same URL you set in Vercel>" npm run seed
+   DATABASE_POSTGRES_URL="<the same URL you set in Vercel>" npm run seed
    ```
    (Re-running the seed script wipes and recreates all data — including any
    real accounts — so only run it once, right after the first deploy.)

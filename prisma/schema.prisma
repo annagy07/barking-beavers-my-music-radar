@@ -1,9 +1,16 @@
 // Barking Beaver — Prisma schema
-// Runs on PostgreSQL (works great on Vercel Postgres/Neon's free tier).
-// Field types (String IDs, JSON-as-string, String "enums") were kept
-// deliberately simple during early development so the schema also ran on
-// SQLite with zero changes — they still work fine on Postgres, and could
-// later be promoted to native `enum` types / `Json` columns if desired.
+// Runs on PostgreSQL (works great on Vercel Postgres/Neon/Prisma Postgres'
+// free tiers). Field types (String IDs, JSON-as-string, String "enums")
+// were kept deliberately simple during early development so the schema
+// also ran on SQLite with zero changes — they still work fine on
+// Postgres, and could later be promoted to native `enum` types / `Json`
+// columns if desired.
+//
+// DATABASE_POSTGRES_URL (not DATABASE_URL): if you're using "Prisma
+// Postgres" via Vercel's Storage tab, its DATABASE_URL is a
+// prisma+postgres:// Accelerate URL that only the extended client can
+// use — DATABASE_POSTGRES_URL is the plain, direct connection string the
+// CLI (and this app, since it doesn't use the Accelerate extension) needs.
 
 generator client {
   provider = "prisma-client-js"
@@ -11,7 +18,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_POSTGRES_URL")
 }
 
 // ---------------------------------------------------------------------------
