@@ -1,14 +1,14 @@
 import "server-only";
 import { db } from "@/lib/db";
 import { syncSpotifyReleasesForArtist } from "./spotifyReleases";
-import { syncBandsintownForArtist, isBandsintownConfigured } from "./bandsintown";
+import { syncTicketmasterForArtist, isTicketmasterConfigured } from "./ticketmaster";
 import { syncYoutubeForArtist, isYoutubeConfigured } from "./youtube";
 import { isSpotifyContentSyncConfigured } from "./spotifyClientCredentials";
 
 export interface SyncAllSummary {
   artistsProcessed: number;
   spotify: { enabled: boolean; created: number; errors: string[] };
-  bandsintown: { enabled: boolean; created: number; errors: string[] };
+  ticketmaster: { enabled: boolean; created: number; errors: string[] };
   youtube: { enabled: boolean; created: number; errors: string[] };
 }
 
@@ -16,14 +16,14 @@ export interface SyncAllSummary {
  * Pulls fresh content for every artist someone actually follows (not the
  * whole catalog — no point spending API quota on artists nobody tracks).
  * Each source is best-effort and independently fails soft: one artist's
- * Spotify error, say, never blocks its Bandsintown/YouTube sync or any
+ * Spotify error, say, never blocks its Ticketmaster/YouTube sync or any
  * other artist's sync.
  */
 export async function syncAllContent(): Promise<SyncAllSummary> {
   const summary: SyncAllSummary = {
     artistsProcessed: 0,
     spotify: { enabled: isSpotifyContentSyncConfigured(), created: 0, errors: [] },
-    bandsintown: { enabled: isBandsintownConfigured(), created: 0, errors: [] },
+    ticketmaster: { enabled: isTicketmasterConfigured(), created: 0, errors: [] },
     youtube: { enabled: isYoutubeConfigured(), created: 0, errors: [] },
   };
 
@@ -43,13 +43,13 @@ export async function syncAllContent(): Promise<SyncAllSummary> {
       }
     }
 
-    if (summary.bandsintown.enabled) {
+    if (summary.ticketmaster.enabled) {
       try {
-        const r = await syncBandsintownForArtist(db, artist);
-        summary.bandsintown.created += r.created;
-        summary.bandsintown.errors.push(...r.errors);
+        const r = await syncTicketmasterForArtist(db, artist);
+        summary.ticketmaster.created += r.created;
+        summary.ticketmaster.errors.push(...r.errors);
       } catch (err) {
-        summary.bandsintown.errors.push(`${artist.name}: ${(err as Error).message}`);
+        summary.ticketmaster.errors.push(`${artist.name}: ${(err as Error).message}`);
       }
     }
 

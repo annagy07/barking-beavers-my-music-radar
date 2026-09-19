@@ -115,7 +115,7 @@ npx eslint .       # lint
   delete account. `/privacy` and `/unsubscribe` placeholders.
 - **Live content sync** (optional — see below) — real releases, concerts
   and videos for artists people actually follow, pulled from Spotify,
-  Bandsintown and YouTube on a daily Vercel Cron, on top of the seeded
+  Ticketmaster and YouTube on a daily Vercel Cron, on top of the seeded
   catalog.
 
 ## What's mocked
@@ -153,8 +153,12 @@ into the same `MusicEvent` shape the rest of the app already reads from:
   `spotifyId` (set automatically once they're imported via onboarding's
   Spotify connect) are checked; releases older than 90 days are skipped so
   a first sync doesn't dump an artist's whole back catalog.
-- `bandsintown.ts` — upcoming shows, via Bandsintown's free public events
-  API. Needs `BANDSINTOWN_APP_ID`.
+- `ticketmaster.ts` — upcoming shows (and their presale windows), via
+  Ticketmaster's Discovery API — free, self-serve, no partner approval
+  needed (unlike Bandsintown/Songkick's event APIs, which now require
+  one). Needs `TICKETMASTER_API_KEY`. Only keeps results where the artist
+  is an actual listed attraction, since Ticketmaster's keyword search can
+  otherwise surface loosely-related events.
 - `youtube.ts` — new uploads, via the YouTube Data API. Needs
   `YOUTUBE_API_KEY`. Resolves each artist's channel once (the expensive
   search call) and caches it on `Artist.youtubeChannelId`, then reads new
@@ -168,7 +172,7 @@ User-related table.
 
 **Setup:**
 
-1. Add `BANDSINTOWN_APP_ID` (instant, free — see the comment in
+1. Add `TICKETMASTER_API_KEY` (instant, free — see the comment in
    `.env.example` for the signup link) and/or `YOUTUBE_API_KEY` (free
    Google Cloud API key) as environment variables — locally in `.env`,
    and in Vercel under Settings → Environment Variables for production.
