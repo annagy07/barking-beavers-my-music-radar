@@ -67,6 +67,28 @@ export async function createEventIfNew(
   return true;
 }
 
+/** fetch() with retry-on-429. Running several artists concurrently means
+ * several requests can land on the same external API in the same instant,
+ * which trips per-app rate limits that a single sequential caller never
+ * would — this backs off (honoring Retry-After when the API sends one) and
+ * retries instead of just recording the request as failed. */
+export async function fetchWithRetry(
+  url: string,
+  init: RequestInit,
+  maxRetries = 3,
+): Promise<Response> {
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(url, init);
+    if (res.status !== 429 || attempt >= maxRetries) return res;
+
+    const retryAfter = Number(res.headers.get("retry-after"));
+    const delayMs = Number.isFinite(retryAfter) && retryAfter > 0
+      ? retryAfter * 1000
+      : 500 * 2 ** attempt;
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+}
+
 export interface SyncResult {
   created: number;
   errors: string[];

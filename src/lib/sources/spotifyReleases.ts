@@ -1,6 +1,6 @@
 import type { Artist, PrismaClient } from "@prisma/client";
 import { getSpotifyAppToken } from "./spotifyClientCredentials";
-import { createEventIfNew, emptyResult, getOrCreateSource, type SyncResult } from "./shared";
+import { createEventIfNew, emptyResult, fetchWithRetry, getOrCreateSource, type SyncResult } from "./shared";
 
 const MAX_RELEASE_AGE_DAYS = 90; // skip an artist's back catalog on first sync
 
@@ -33,7 +33,7 @@ export async function syncSpotifyReleasesForArtist(
   if (!artist.spotifyId) return result;
 
   const token = await getSpotifyAppToken();
-  const res = await fetch(
+  const res = await fetchWithRetry(
     `https://api.spotify.com/v1/artists/${artist.spotifyId}/albums?include_groups=single,album&limit=10&market=US`,
     { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" },
   );

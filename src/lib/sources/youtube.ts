@@ -1,5 +1,5 @@
 import type { Artist, PrismaClient } from "@prisma/client";
-import { createEventIfNew, emptyResult, getOrCreateSource, type SyncResult } from "./shared";
+import { createEventIfNew, emptyResult, fetchWithRetry, getOrCreateSource, type SyncResult } from "./shared";
 
 const MAX_VIDEO_AGE_DAYS = 90;
 
@@ -11,7 +11,7 @@ async function resolveChannelId(name: string, apiKey: string): Promise<string | 
   // Costs 100 quota units — only spent once per artist, then cached on
   // Artist.youtubeChannelId. Takes the top channel search result as a
   // best-effort match; there's no reliable "official channel" flag.
-  const res = await fetch(
+  const res = await fetchWithRetry(
     `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&maxResults=1&q=${encodeURIComponent(name)}&key=${apiKey}`,
     { cache: "no-store" },
   );
@@ -49,7 +49,7 @@ export async function syncYoutubeForArtist(
   }
 
   const uploadsPlaylistId = `UU${channelId.slice(2)}`;
-  const res = await fetch(
+  const res = await fetchWithRetry(
     `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=5&playlistId=${uploadsPlaylistId}&key=${apiKey}`,
     { cache: "no-store" },
   );

@@ -1,5 +1,5 @@
 import type { Artist, PrismaClient } from "@prisma/client";
-import { createEventIfNew, emptyResult, getOrCreateSource, type SyncResult } from "./shared";
+import { createEventIfNew, emptyResult, fetchWithRetry, getOrCreateSource, type SyncResult } from "./shared";
 
 interface TicketmasterVenue {
   name: string;
@@ -67,7 +67,7 @@ export async function syncTicketmasterForArtist(
     sort: "date,asc",
     size: "10",
   });
-  const res = await fetch(`https://app.ticketmaster.com/discovery/v2/events.json?${params}`, {
+  const res = await fetchWithRetry(`https://app.ticketmaster.com/discovery/v2/events.json?${params}`, {
     cache: "no-store",
   });
   if (!res.ok) {
