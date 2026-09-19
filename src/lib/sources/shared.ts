@@ -75,3 +75,28 @@ export interface SyncResult {
 export function emptyResult(): SyncResult {
   return { created: 0, errors: [] };
 }
+
+/** Runs `fn` over `items` with at most `concurrency` in flight at once.
+ * Used to keep syncAllContent within Vercel's function time limit — three
+ * sequential external API calls per artist doesn't scale to hundreds of
+ * followed artists, but a bounded worker pool does. */
+export async function mapWithConcurrency<T, R>(
+  items: T[],
+  concurrency: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let nextIndex = 0;
+
+  async function worker() {
+    while (nextIndex < items.length) {
+      const i = nextIndex++;
+      results[i] = await fn(items[i]);
+    }
+  }
+
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, items.length) }, worker),
+  );
+  return results;
+}
