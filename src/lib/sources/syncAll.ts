@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { syncSpotifyReleasesForArtist } from "./spotifyReleases";
 import { syncTicketmasterForArtist, isTicketmasterConfigured } from "./ticketmaster";
 import { syncYoutubeForArtist, isYoutubeConfigured } from "./youtube";
+import { syncBlogNews, isBlogNewsConfigured } from "./blogNews";
 import { isSpotifyContentSyncConfigured } from "./spotifyClientCredentials";
 import { mapWithConcurrency } from "./shared";
 
@@ -12,6 +13,7 @@ export interface SyncAllSummary {
   spotify: { enabled: boolean; created: number; errors: string[] };
   ticketmaster: { enabled: boolean; created: number; errors: string[] };
   youtube: { enabled: boolean; created: number; errors: string[] };
+  blogNews: { enabled: boolean; created: number; errors: string[] };
 }
 
 // How many artists to sync in parallel. Sequential (1-at-a-time, 3 external
@@ -35,6 +37,7 @@ export async function syncAllContent(): Promise<SyncAllSummary> {
     spotify: { enabled: isSpotifyContentSyncConfigured(), created: 0, errors: [] },
     ticketmaster: { enabled: isTicketmasterConfigured(), created: 0, errors: [] },
     youtube: { enabled: isYoutubeConfigured(), created: 0, errors: [] },
+    blogNews: { enabled: isBlogNewsConfigured(), created: 0, errors: [] },
   };
 
   const artists = await db.artist.findMany({
@@ -78,7 +81,21 @@ export async function syncAllContent(): Promise<SyncAllSummary> {
     }
   }
 
-  await mapWithConcurrency(artists, ARTIST_CONCURRENCY, syncOneArtist);
+  async function syncBlogs() {
+    if (!summary.blogNews.enabled) return;
+    try {
+      const r = await syncBlogNews(db, artists);
+      summary.blogNews.created += r.created;
+      summary.blogNews.errors.push(...r.errors);
+    } catch (err) {
+      summary.blogNews.errors.push((err as Error).message);
+    }
+  }
+
+  // Blog feeds cover every artist at once, so unlike the other three
+  // sources this runs once for the whole batch, not once per artist —
+  // runs alongside the per-artist worker pool rather than after it.
+  await Promise.all([mapWithConcurrency(artists, ARTIST_CONCURRENCY, syncOneArtist), syncBlogs()]);
 
   return summary;
 }

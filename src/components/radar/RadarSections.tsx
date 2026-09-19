@@ -11,6 +11,7 @@ const SECTION_HEADINGS: { key: keyof RadarResult["sections"]; heading: string }[
   { key: "interviews", heading: "Interviews" },
   { key: "collaborations", heading: "Collaborations" },
   { key: "facts", heading: "Interesting facts" },
+  { key: "blogNews", heading: "Blog coverage" },
   { key: "discovery", heading: "Discovery" },
 ];
 

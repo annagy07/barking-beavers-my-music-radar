@@ -29,6 +29,7 @@ export interface RadarSections {
   collaborations: RadarItem[];
   facts: RadarItem[];
   discovery: RadarItem[];
+  blogNews: RadarItem[];
 }
 
 export interface RadarResult {

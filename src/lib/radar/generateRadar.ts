@@ -360,6 +360,7 @@ function emptySections(): RadarSections {
     collaborations: [],
     facts: [],
     discovery: [],
+    blogNews: [],
   };
 }
 
@@ -376,6 +377,7 @@ function buildSections(items: RadarItem[]): RadarSections {
     collaboration: "collaborations",
     fact: "facts",
     discovery: "discovery",
+    blog_news: "blogNews",
   };
   for (const item of items) {
     const key = byType[item.type];

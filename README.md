@@ -113,10 +113,10 @@ npx eslint .       # lint
 - **Privacy controls** — disconnect Spotify, delete imported Spotify taste
   data (separate from disconnecting), pause/resume/unsubscribe newsletter,
   delete account. `/privacy` and `/unsubscribe` placeholders.
-- **Live content sync** (optional — see below) — real releases, concerts
-  and videos for artists people actually follow, pulled from Spotify,
-  Ticketmaster and YouTube on a daily Vercel Cron, on top of the seeded
-  catalog.
+- **Live content sync** (optional — see below) — real releases, concerts,
+  videos and blog coverage for artists people actually follow, pulled from
+  Spotify, Ticketmaster, YouTube and music-blog RSS feeds on a daily
+  Vercel Cron, on top of the seeded catalog.
 
 ## What's mocked
 
@@ -140,11 +140,11 @@ npx eslint .       # lint
 3. Set `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REDIRECT_URI`
    in `.env`.
 
-## Live content sync (real releases, concerts, videos)
+## Live content sync (real releases, concerts, videos, blog news)
 
 The seeded catalog covers a fixed set of ~60 artists. To pull **real**
 content — for whichever artists people actually follow, not just the seed
-list — `src/lib/sources/` has three independent adapters, each normalizing
+list — `src/lib/sources/` has four independent adapters, each normalizing
 into the same `MusicEvent` shape the rest of the app already reads from:
 
 - `spotifyReleases.ts` — new singles/albums, via Spotify's Client
@@ -153,22 +153,35 @@ into the same `MusicEvent` shape the rest of the app already reads from:
   `spotifyId` (set automatically once they're imported via onboarding's
   Spotify connect) are checked; releases older than 90 days are skipped so
   a first sync doesn't dump an artist's whole back catalog.
-- `ticketmaster.ts` — upcoming shows (and their presale windows), via
-  Ticketmaster's Discovery API — free, self-serve, no partner approval
-  needed (unlike Bandsintown/Songkick's event APIs, which now require
-  one). Needs `TICKETMASTER_API_KEY`. Only keeps results where the artist
-  is an actual listed attraction, since Ticketmaster's keyword search can
-  otherwise surface loosely-related events.
+- `ticketmaster.ts` — upcoming shows, via Ticketmaster's Discovery API —
+  free, self-serve, no partner approval needed (unlike Bandsintown/
+  Songkick's event APIs, which now require one). Needs
+  `TICKETMASTER_API_KEY`. Only keeps results where the artist is an actual
+  listed attraction, since Ticketmaster's keyword search can otherwise
+  surface loosely-related events. Presale windows are collapsed to one
+  "tour presale" row per artist (whichever opens soonest) rather than one
+  per venue, since a tour's presale is almost always the same window
+  across every date.
 - `youtube.ts` — new uploads, via the YouTube Data API. Needs
   `YOUTUBE_API_KEY`. Resolves each artist's channel once (the expensive
   search call) and caches it on `Artist.youtubeChannelId`, then reads new
   uploads via the channel's uploads playlist (1 quota unit instead of 100)
   on every later sync.
+- `blogNews.ts` — coverage from a fixed list of music blogs/magazines'
+  public RSS/Atom feeds (UK/US: DIY Magazine, The Line of Best Fit,
+  Stereogum; German: Musikexpress, Rolling Stone DE, laut.de) — no API key
+  needed. This is the only source that can catch things no structured API
+  tracks, like merch or album-cycle news. Each feed is fetched once per
+  sync (not once per artist) and matched against followed artists' names
+  in the title; items older than 14 days are skipped. Off by default in
+  onboarding/preferences ("Blog coverage") since blog matching is looser
+  than the other three (title substring match, no structured "this is
+  about artist X" field to key off).
 
-Each adapter is independent and simply no-ops if its own env var isn't
-set — you don't need all three. All three are dedup-safe (skip an event
-that already exists for that artist/type/title) and never touch any
-User-related table.
+Each adapter is independent and simply no-ops (or, for blogNews, just logs
+a per-feed error and keeps going) if its own env var isn't set — you don't
+need all four. All are dedup-safe (skip an event that already exists for
+that artist/type/title) and never touch any User-related table.
 
 **Setup:**
 
