@@ -21,7 +21,11 @@ import {
 } from "./scoring";
 import type { RadarItem, RadarResult, RadarSections } from "./types";
 
-const MAX_PER_SECTION = 6;
+// Sections hold up to this many items — the /radar page shows the first 6
+// and lets you expand to the rest (see RadarSection.tsx); the newsletter
+// email, which can't be interactive, always caps at 6 regardless (see
+// EMAIL_MAX_PER_SECTION in email/render.ts).
+const MAX_PER_SECTION = 15;
 const LOOKAHEAD_RELEVANT_TYPES = new Set(["concert", "tour", "presale"]);
 
 function parseGenres(json: string): string[] {
@@ -373,6 +377,12 @@ function emptySections(): RadarSections {
   };
 }
 
+// Sections where only the single best item per artist should show — an
+// artist dropping three singles this week doesn't need three "Just
+// Released" cards, just the one that scored highest (items arrive here
+// already sorted, so "first seen per artist" is "best seen per artist").
+const DEDUPE_ARTIST_SECTIONS = new Set<keyof RadarSections>(["justReleased", "upcoming"]);
+
 function buildSections(items: RadarItem[]): RadarSections {
   const sections = emptySections();
   const byType: Record<string, keyof RadarSections> = {
@@ -388,10 +398,20 @@ function buildSections(items: RadarItem[]): RadarSections {
     discovery: "discovery",
     blog_news: "blogNews",
   };
+  const seenArtistIds = new Map<keyof RadarSections, Set<string>>();
+
   for (const item of items) {
     const key = byType[item.type];
     if (!key) continue;
     if (sections[key].length >= MAX_PER_SECTION) continue;
+
+    if (DEDUPE_ARTIST_SECTIONS.has(key)) {
+      const seen = seenArtistIds.get(key) ?? new Set<string>();
+      if (seen.has(item.artistId)) continue;
+      seen.add(item.artistId);
+      seenArtistIds.set(key, seen);
+    }
+
     sections[key].push(item);
   }
   return sections;

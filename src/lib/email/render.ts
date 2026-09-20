@@ -71,8 +71,14 @@ function renderItem(item: RadarItem) {
     </tr>`;
 }
 
+// Sections can hold up to 15 items (the web radar lets you expand to see
+// them); an email has no "show more" interaction, so it always caps at
+// the same 6-per-section count the radar shows by default.
+const EMAIL_MAX_PER_SECTION = 6;
+
 function renderSection(heading: string, items: RadarItem[]) {
   if (items.length === 0) return "";
+  const visible = items.slice(0, EMAIL_MAX_PER_SECTION);
   return `
     <tr>
       <td style="padding:28px 0 10px 0;">
@@ -84,7 +90,7 @@ function renderSection(heading: string, items: RadarItem[]) {
     <tr>
       <td>
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-          ${items.map(renderItem).join("")}
+          ${visible.map(renderItem).join("")}
         </table>
       </td>
     </tr>`;
