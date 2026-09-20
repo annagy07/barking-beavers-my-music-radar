@@ -39,12 +39,20 @@ export default function LandingPage() {
       <header className="border-b border-line">
         <Container className="flex h-16 items-center justify-between">
           <BrandMark className="text-lg" />
-          <Link
-            href="/onboarding"
-            className="font-mono text-xs uppercase tracking-wide text-ink-soft hover:text-accent"
-          >
-            Build my radar →
-          </Link>
+          <div className="flex items-center gap-5 font-mono text-xs uppercase tracking-wide">
+            <Link
+              href="/login"
+              className="text-ink-soft hover:text-accent"
+            >
+              Log in
+            </Link>
+            <Link
+              href="/onboarding"
+              className="text-ink-soft hover:text-accent"
+            >
+              Build my radar →
+            </Link>
+          </div>
         </Container>
       </header>
 
