@@ -109,12 +109,20 @@ export const realSpotifyAdapter: SpotifyAdapter = {
 
   async fetchImportedArtists(accessToken) {
     const results: SpotifyImportedArtist[] = [];
+    // An artist who's followed is very often also in top artists (and
+    // sometimes liked-song credits too) — dedupe across all three calls,
+    // not just within the last one, keeping whichever category we saw
+    // first: followed > top artist > saved music, the same priority order
+    // DEFAULT_RELEVANCE_BY_SOURCE already uses for default relevance.
+    const seen = new Set<string>();
 
     const following = await spotifyFetch(
       "/me/following?type=artist&limit=50",
       accessToken,
     );
     for (const artist of following?.artists?.items ?? []) {
+      if (seen.has(artist.id)) continue;
+      seen.add(artist.id);
       results.push(toImported(artist, "spotify_followed_artist"));
     }
 
@@ -123,11 +131,12 @@ export const realSpotifyAdapter: SpotifyAdapter = {
       accessToken,
     );
     for (const artist of top?.items ?? []) {
+      if (seen.has(artist.id)) continue;
+      seen.add(artist.id);
       results.push(toImported(artist, "spotify_top_artist"));
     }
 
     const saved = await spotifyFetch("/me/tracks?limit=50", accessToken);
-    const seen = new Set(results.map((a) => a.spotifyId));
     for (const item of saved?.items ?? []) {
       for (const artist of item?.track?.artists ?? []) {
         if (seen.has(artist.id)) continue;
