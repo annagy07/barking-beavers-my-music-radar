@@ -32,12 +32,7 @@ function renderItem(item: RadarItem) {
     .filter(Boolean)
     .join(" · ");
 
-  return `
-    <tr>
-      <td style="padding:0 0 22px 0;">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-left:3px solid ${ACCENT};">
-          <tr>
-            <td style="padding:2px 0 2px 16px;">
+  const textCell = `
               <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:${INK_SOFT};margin-bottom:4px;">
                 ${escapeHtml(item.artistName)}
               </div>
@@ -50,8 +45,26 @@ function renderItem(item: RadarItem) {
               </div>
               <div style="font-size:12.5px;line-height:1.5;color:${INK_SOFT};font-style:italic;">
                 Why this is here: ${escapeHtml(item.reasons[0] ?? "")}
-              </div>
+              </div>`;
+
+  const body = item.imageUrl
+    ? `
+            <td style="padding:2px 16px 2px 16px;" valign="top">
+              <table role="presentation" cellpadding="0" cellspacing="0"><tr><td>
+                <img src="${escapeHtml(item.imageUrl)}" width="64" height="64" alt="" style="display:block;width:64px;height:64px;object-fit:cover;border:1px solid ${LINE};" />
+              </td></tr></table>
             </td>
+            <td style="padding:2px 0 2px 0;" valign="top">${textCell}
+            </td>`
+    : `
+            <td style="padding:2px 0 2px 16px;">${textCell}
+            </td>`;
+
+  return `
+    <tr>
+      <td style="padding:0 0 22px 0;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-left:3px solid ${ACCENT};">
+          <tr>${body}
           </tr>
         </table>
       </td>

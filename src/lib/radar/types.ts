@@ -10,6 +10,7 @@ export interface RadarItem {
   eventDate: string | null;
   city: string | null;
   venue: string | null;
+  imageUrl: string | null;
   sourceName: string;
   sourceType: string;
   sourceUrl: string | null;

@@ -161,7 +161,9 @@ into the same `MusicEvent` shape the rest of the app already reads from:
   `SPOTIFY_CLIENT_ID`/`SPOTIFY_CLIENT_SECRET`). Only artists with a
   `spotifyId` (set automatically once they're imported via onboarding's
   Spotify connect) are checked; releases older than 90 days are skipped so
-  a first sync doesn't dump an artist's whole back catalog.
+  a first sync doesn't dump an artist's whole back catalog. Also records
+  the release's cover art (`MusicEvent.imageUrl`, a Spotify CDN URL) —
+  shown as a thumbnail on both `/radar` and in the newsletter.
 - `ticketmaster.ts` — upcoming shows, via Ticketmaster's Discovery API —
   free, self-serve, no partner approval needed (unlike Bandsintown/
   Songkick's event APIs, which now require one). Needs

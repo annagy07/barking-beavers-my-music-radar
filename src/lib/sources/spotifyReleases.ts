@@ -4,6 +4,12 @@ import { createEventIfNew, emptyResult, fetchWithRetry, getOrCreateSource, type 
 
 const MAX_RELEASE_AGE_DAYS = 90; // skip an artist's back catalog on first sync
 
+interface SpotifyImage {
+  url: string;
+  height: number | null;
+  width: number | null;
+}
+
 interface SpotifyAlbum {
   id: string;
   name: string;
@@ -11,6 +17,7 @@ interface SpotifyAlbum {
   release_date: string;
   release_date_precision: "year" | "month" | "day";
   external_urls: { spotify: string };
+  images?: SpotifyImage[];
 }
 
 function parseReleaseDate(album: SpotifyAlbum): Date {
@@ -18,6 +25,15 @@ function parseReleaseDate(album: SpotifyAlbum): Date {
   if (album.release_date_precision === "day") return new Date(`${raw}T00:00:00Z`);
   if (album.release_date_precision === "month") return new Date(`${raw}-01T00:00:00Z`);
   return new Date(`${raw}-01-01T00:00:00Z`);
+}
+
+/** Spotify returns cover art in a few fixed sizes (usually 640/300/64px),
+ * largest first. A ~300px image is plenty for both the radar and an email
+ * and costs a lot less to load than the 640px original. */
+function pickCoverImage(images: SpotifyImage[] | undefined): string | undefined {
+  if (!images || images.length === 0) return undefined;
+  const midSized = images.find((img) => img.width !== null && img.width <= 300);
+  return (midSized ?? images[images.length - 1]).url;
 }
 
 /** Fetches an artist's recent singles/albums from Spotify's public catalog
@@ -62,6 +78,7 @@ export async function syncSpotifyReleasesForArtist(
       title: album.name,
       description: `New ${album.album_type} on Spotify.`,
       publishedAt: releaseDate,
+      imageUrl: pickCoverImage(album.images),
       sourceId: source.id,
       sourceUrl: album.external_urls?.spotify,
       credibilityScore: source.credibilityScore,

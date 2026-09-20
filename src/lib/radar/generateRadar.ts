@@ -347,6 +347,7 @@ function toRadarItem(
     eventDate: event.eventDate ? event.eventDate.toISOString() : null,
     city: event.city,
     venue: event.venue,
+    imageUrl: event.imageUrl,
     sourceName: event.source.name,
     sourceType: event.source.type,
     sourceUrl: event.sourceUrl,

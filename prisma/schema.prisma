@@ -219,6 +219,7 @@ model MusicEvent {
   city             String?
   venue            String?
   genreTags        String // JSON array string
+  imageUrl         String? // album/single cover art — currently only populated by the Spotify releases sync
   sourceId         String
   sourceUrl        String?
   credibilityScore Int // denormalized snapshot of source credibility at ingest time

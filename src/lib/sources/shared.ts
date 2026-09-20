@@ -30,6 +30,7 @@ export interface NewEventInput {
   eventDate?: Date;
   city?: string;
   venue?: string;
+  imageUrl?: string;
   sourceId: string;
   sourceUrl?: string;
   credibilityScore: number;
@@ -58,6 +59,7 @@ export async function createEventIfNew(
       eventDate: input.eventDate,
       city: input.city,
       venue: input.venue,
+      imageUrl: input.imageUrl,
       genreTags: JSON.stringify([]),
       sourceId: input.sourceId,
       sourceUrl: input.sourceUrl,
@@ -120,6 +122,7 @@ export async function upsertSingletonEvent(
     eventDate: input.eventDate,
     city: input.city,
     venue: input.venue,
+    imageUrl: input.imageUrl,
     sourceId: input.sourceId,
     sourceUrl: input.sourceUrl,
     credibilityScore: input.credibilityScore,
