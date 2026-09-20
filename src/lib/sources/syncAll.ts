@@ -15,6 +15,21 @@ import { mapWithConcurrency, type SyncResult } from "./shared";
 // trips, without hammering any one API hard enough to get rate-limited.
 const ARTIST_CONCURRENCY = 8;
 
+// Spotify's Client Credentials rate limit turned out to be much easier to
+// trip (and much slower to recover from — the whole app can end up 429ing
+// on every request for a while, not just the burst that tripped it) than
+// Ticketmaster's or YouTube's, which were fine at ARTIST_CONCURRENCY. A
+// lower concurrency here means fewer simultaneous requests hitting an
+// already-strained limit.
+const SPOTIFY_CONCURRENCY = 3;
+
+// If this many consecutive attempts all come back 429, the source is
+// rate-limited right now for the whole app, not just unlucky — burning the
+// rest of the time budget retrying every remaining artist one at a time
+// would just produce more of the same. Stop and let the next sync retry
+// once the limit window has had a chance to clear.
+const RATE_LIMIT_CIRCUIT_BREAKER = 10;
+
 // Each route's own maxDuration is 60s — this stops picking up new artists
 // comfortably before that, leaving headroom for in-flight requests to
 // finish and the JSON response itself to be written. Splitting sync into
@@ -39,6 +54,7 @@ async function followedArtists(): Promise<Artist[]> {
 async function syncPerArtistSource(
   enabled: boolean,
   syncOne: (db: PrismaClient, artist: Artist) => Promise<SyncResult>,
+  concurrency: number = ARTIST_CONCURRENCY,
 ): Promise<SourceSyncResult> {
   const result: SourceSyncResult = { enabled, artistsProcessed: 0, created: 0, errors: [] };
   if (!enabled) return result;
@@ -48,9 +64,11 @@ async function syncPerArtistSource(
 
   const deadline = Date.now() + ROUTE_TIME_BUDGET_MS;
   let skipped = 0;
+  let consecutiveRateLimits = 0;
+  let circuitOpen = false;
 
-  await mapWithConcurrency(artists, ARTIST_CONCURRENCY, async (artist) => {
-    if (Date.now() >= deadline) {
+  await mapWithConcurrency(artists, concurrency, async (artist) => {
+    if (circuitOpen || Date.now() >= deadline) {
       skipped++;
       return;
     }
@@ -58,12 +76,20 @@ async function syncPerArtistSource(
       const r = await syncOne(db, artist);
       result.created += r.created;
       result.errors.push(...r.errors);
+
+      const rateLimited = r.errors.some((e) => e.includes("(429)"));
+      consecutiveRateLimits = rateLimited ? consecutiveRateLimits + 1 : 0;
+      if (consecutiveRateLimits >= RATE_LIMIT_CIRCUIT_BREAKER) circuitOpen = true;
     } catch (err) {
       result.errors.push(`${artist.name}: ${(err as Error).message}`);
     }
   });
 
-  if (skipped > 0) {
+  if (circuitOpen) {
+    result.errors.push(
+      "Stopped early — this source looks rate-limited for the whole app right now; try again in a few minutes.",
+    );
+  } else if (skipped > 0) {
     result.errors.push(
       `Ran out of time budget — ${skipped} artist(s) skipped this run, will be picked up on the next sync.`,
     );
@@ -78,7 +104,11 @@ async function syncPerArtistSource(
 // invocation reliably exceeded Vercel's function duration limit.
 
 export function syncSpotifyContent(): Promise<SourceSyncResult> {
-  return syncPerArtistSource(isSpotifyContentSyncConfigured(), syncSpotifyReleasesForArtist);
+  return syncPerArtistSource(
+    isSpotifyContentSyncConfigured(),
+    syncSpotifyReleasesForArtist,
+    SPOTIFY_CONCURRENCY,
+  );
 }
 
 export function syncTicketmasterContent(): Promise<SourceSyncResult> {
