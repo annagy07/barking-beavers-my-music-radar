@@ -169,7 +169,7 @@ into the same `MusicEvent` shape the rest of the app already reads from:
   on every later sync.
 - `blogNews.ts` — coverage from a fixed list of music blogs/magazines'
   public RSS/Atom feeds (UK/US: DIY Magazine, The Line of Best Fit,
-  Stereogum; German: Musikexpress, Rolling Stone DE, laut.de) — no API key
+  Stereogum; German: Musikexpress, Rolling Stone DE) — no API key
   needed. This is the only source that can catch things no structured API
   tracks, like merch or album-cycle news. Each feed is fetched once per
   sync (not once per artist) and matched against followed artists' names

@@ -15,6 +15,16 @@ import { mapWithConcurrency, type SyncResult } from "./shared";
 // trips, without hammering any one API hard enough to get rate-limited.
 const ARTIST_CONCURRENCY = 8;
 
+// Each route's own maxDuration is 60s — this stops picking up new artists
+// comfortably before that, leaving headroom for in-flight requests to
+// finish and the JSON response itself to be written. Splitting sync into
+// one route per source (see syncSpotifyContent etc.) was step one; this is
+// step two, for whenever even a single source alone doesn't fit one run
+// (e.g. Spotify's rate limits at 150+ followed artists). Artists skipped
+// this way are simply picked up on the next daily sync — nothing is lost,
+// just delayed a day at most.
+const ROUTE_TIME_BUDGET_MS = 45_000;
+
 export interface SourceSyncResult {
   enabled: boolean;
   artistsProcessed: number;
@@ -36,7 +46,14 @@ async function syncPerArtistSource(
   const artists = await followedArtists();
   result.artistsProcessed = artists.length;
 
+  const deadline = Date.now() + ROUTE_TIME_BUDGET_MS;
+  let skipped = 0;
+
   await mapWithConcurrency(artists, ARTIST_CONCURRENCY, async (artist) => {
+    if (Date.now() >= deadline) {
+      skipped++;
+      return;
+    }
     try {
       const r = await syncOne(db, artist);
       result.created += r.created;
@@ -45,6 +62,12 @@ async function syncPerArtistSource(
       result.errors.push(`${artist.name}: ${(err as Error).message}`);
     }
   });
+
+  if (skipped > 0) {
+    result.errors.push(
+      `Ran out of time budget — ${skipped} artist(s) skipped this run, will be picked up on the next sync.`,
+    );
+  }
 
   return result;
 }

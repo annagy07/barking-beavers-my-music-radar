@@ -17,13 +17,18 @@ interface BlogFeed {
 // standard feed URLs (most run on WordPress's default /feed/ path) — a
 // wrong or moved URL just shows up as one entry in `errors` below and
 // never blocks the other feeds or sources.
+//
+// laut.de was in this list but its guessed URL 404s and the correct one
+// couldn't be verified (its domain isn't reachable from this environment,
+// including via WebFetch) — removed rather than left permanently broken.
+// Re-add it with a confirmed URL if you find one (check laut.de itself for
+// an RSS/feed link).
 const BLOG_FEEDS: BlogFeed[] = [
   { name: "DIY Magazine", url: "https://diymag.com/feed" },
   { name: "The Line of Best Fit", url: "https://www.thelineofbestfit.com/feed" },
   { name: "Stereogum", url: "https://www.stereogum.com/feed/" },
   { name: "Musikexpress", url: "https://www.musikexpress.de/feed/" },
   { name: "Rolling Stone DE", url: "https://www.rollingstone.de/feed/" },
-  { name: "laut.de", url: "https://www.laut.de/vdb/musiknews.rss" },
 ];
 
 export function isBlogNewsConfigured(): boolean {

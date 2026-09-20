@@ -72,19 +72,29 @@ export async function createEventIfNew(
  * which trips per-app rate limits that a single sequential caller never
  * would — this backs off (honoring Retry-After when the API sends one) and
  * retries instead of just recording the request as failed. */
+// Spotify in particular can send a Retry-After well past what's worth
+// waiting on inside one serverless invocation with a hard time limit — a
+// handful of rate-limited artists honoring a 20-30s Retry-After each would
+// blow the whole route's budget by themselves. Capping the wait means a
+// slow retry costs at most a few seconds, not tens of seconds; an artist
+// that still 429s after that just gets skipped this run and picked up
+// again on the next sync rather than stalling everyone behind it.
+const MAX_RETRY_DELAY_MS = 3000;
+
 export async function fetchWithRetry(
   url: string,
   init: RequestInit,
-  maxRetries = 3,
+  maxRetries = 2,
 ): Promise<Response> {
   for (let attempt = 0; ; attempt++) {
     const res = await fetch(url, init);
     if (res.status !== 429 || attempt >= maxRetries) return res;
 
     const retryAfter = Number(res.headers.get("retry-after"));
-    const delayMs = Number.isFinite(retryAfter) && retryAfter > 0
-      ? retryAfter * 1000
-      : 500 * 2 ** attempt;
+    const delayMs = Math.min(
+      Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 500 * 2 ** attempt,
+      MAX_RETRY_DELAY_MS,
+    );
     await new Promise((resolve) => setTimeout(resolve, delayMs));
   }
 }
