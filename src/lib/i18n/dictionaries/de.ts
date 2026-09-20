@@ -365,6 +365,9 @@ export const de: Dictionary = {
     interested: { label: "Interessiert", description: "Gut zu wissen.", tierLabel: "Relevant" },
     occasional: { label: "Gelegentlich", description: "Nur die großen Sachen.", tierLabel: "Gelegentlich" },
   },
+  relevanceInfo: {
+    note: "Essenzielle Artists werden zuerst angezeigt und zuletzt gekürzt, wenn eine Sektion voll wird. Dein Radar zeigt eine kuratierte Auswahl pro Kategorie, nicht jede einzelne Quelle. Ist dir ein Artist wirklich wichtig, setz ihn auf Essenziell.",
+  },
   frequency: {
     weekly: { label: "Wöchentlich", description: "Ein Digest, jede Woche." },
     twice_weekly: { label: "Zweimal pro Woche", description: "Montag und Donnerstag." },

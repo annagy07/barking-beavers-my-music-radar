@@ -366,6 +366,9 @@ export const en = {
     interested: { label: "Interested", description: "Good to know about.", tierLabel: "Relevant" },
     occasional: { label: "Occasional", description: "Only the big stuff.", tierLabel: "Occasional" },
   } as Record<string, { label: string; description: string; tierLabel: string }>,
+  relevanceInfo: {
+    note: "Essential artists rank first and are the last to get trimmed when a section fills up. Your radar shows a curated selection per category, not every single source, so set anyone who really matters to you as Essential.",
+  },
   frequency: {
     weekly: { label: "Weekly", description: "One digest, every week." },
     twice_weekly: { label: "Twice a week", description: "Monday and Thursday." },

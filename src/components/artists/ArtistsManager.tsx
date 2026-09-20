@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { RELEVANCE_LEVELS, RelevanceId } from "@/lib/constants";
 import { ArtistSource } from "@/lib/onboardingState";
 import { ArtistSearch, SearchArtist } from "@/components/onboarding/ArtistSearch";
+import { RelevanceExplainer } from "@/components/ui/RelevanceExplainer";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 import {
   addArtistPreference,
@@ -77,6 +78,7 @@ export function ArtistsManager({
 
   return (
     <div>
+      <RelevanceExplainer />
       <ul className="divide-y divide-line border border-line">
         {artists.map((artist) => (
           <li

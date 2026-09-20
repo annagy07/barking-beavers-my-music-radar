@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Eyebrow } from "@/components/ui/Container";
+import { RelevanceExplainer } from "@/components/ui/RelevanceExplainer";
 import { ArtistSearch, SearchArtist } from "./ArtistSearch";
 import { WizardArtist } from "@/lib/onboardingState";
 import { RELEVANCE_LEVELS, RelevanceId } from "@/lib/constants";
@@ -36,7 +37,11 @@ export function StepReview({
       </h1>
       <p className="mt-3 text-ink-soft">{s.body}</p>
 
-      <div className="mt-8 space-y-10">
+      <div className="mt-8">
+        <RelevanceExplainer />
+      </div>
+
+      <div className="space-y-10">
         {TIERS.map((tier) => {
           const tierArtists = visible.filter((a) => a.relevance === tier);
           if (tierArtists.length === 0) return null;
