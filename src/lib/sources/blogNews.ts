@@ -1,8 +1,16 @@
 import type { Artist, PrismaClient } from "@prisma/client";
 import { XMLParser } from "fast-xml-parser";
-import { createEventIfNew, emptyResult, fetchWithRetry, getOrCreateSource, type SyncResult } from "./shared";
+import {
+  createEventIfNew,
+  emptyResult,
+  fetchWithRetry,
+  getOrCreateSource,
+  mapWithConcurrency,
+  type SyncResult,
+} from "./shared";
 
 const MAX_ITEM_AGE_DAYS = 14;
+const FEED_CONCURRENCY = 6;
 
 interface BlogFeed {
   name: string;
@@ -13,22 +21,38 @@ interface BlogFeed {
 // "music_publication" credibility tier the seeded Pitchfork/DIY Magazine
 // sources already use. Covers the gap Spotify/Ticketmaster/YouTube can't:
 // merch drops, album-cycle news, anything a blog covers before it hits a
-// structured API. Mix of UK/US and German outlets. These are best-guess
-// standard feed URLs (most run on WordPress's default /feed/ path) — a
-// wrong or moved URL just shows up as one entry in `errors` below and
-// never blocks the other feeds or sources.
+// structured API. Genre-diverse (indie, hip-hop, electronic, metal, pop)
+// and UK/US/DE/FR/Nordic. URLs were looked up individually (not all
+// guessed) but plenty of these sites don't run standard WordPress, so
+// expect some to be stale — a wrong or moved URL just shows up as one
+// entry in `errors` below and never blocks the other feeds or sources.
 //
-// laut.de was in this list but its guessed URL 404s and the correct one
-// couldn't be verified (its domain isn't reachable from this environment,
-// including via WebFetch) — removed rather than left permanently broken.
-// Re-add it with a confirmed URL if you find one (check laut.de itself for
-// an RSS/feed link).
+// Deliberately left out despite being asked for, since no working feed
+// could be found: Complex Music (only a truncated/unusable feed URL
+// turned up), Resident Advisor (their old RSS offering — "The Feed" —
+// appears to have been discontinued). laut.de is out for the same
+// reason (its domain isn't reachable from this environment to check).
 const BLOG_FEEDS: BlogFeed[] = [
   { name: "DIY Magazine", url: "https://diymag.com/feed" },
   { name: "The Line of Best Fit", url: "https://www.thelineofbestfit.com/feed" },
   { name: "Stereogum", url: "https://www.stereogum.com/feed/" },
   { name: "Musikexpress", url: "https://www.musikexpress.de/feed/" },
   { name: "Rolling Stone DE", url: "https://www.rollingstone.de/feed/" },
+  { name: "Pitchfork", url: "https://pitchfork.com/feed/rss" },
+  { name: "Rolling Stone", url: "https://www.rollingstone.com/music/feed/" },
+  { name: "Billboard", url: "https://www.billboard.com/music/feed/" },
+  { name: "NME", url: "https://www.nme.com/music/news?alt=rss" },
+  { name: "Clash", url: "https://www.clashmusic.com/rss.xml" },
+  { name: "Mixmag", url: "https://mixmag.net/rss-category/news" },
+  { name: "DJ Mag", url: "https://feeds.feedburner.com/DJmag-LatestNews" },
+  { name: "Loudwire", url: "https://loudwire.com/feed/" },
+  { name: "Metal Hammer", url: "https://www.loudersound.com/feeds.xml" },
+  { name: "Consequence", url: "https://consequence.net/feed/" },
+  { name: "BrooklynVegan", url: "https://www.brooklynvegan.com/feed/" },
+  { name: "Rap-Up", url: "https://www.rap-up.com/feed" },
+  { name: "Okayplayer", url: "https://www.okayplayer.com/feed" },
+  { name: "Les Inrockuptibles", url: "https://www.lesinrocks.com/feed" },
+  { name: "GAFFA", url: "https://gaffa.dk/feed/" },
 ];
 
 export function isBlogNewsConfigured(): boolean {
@@ -95,7 +119,10 @@ function titleMentionsArtist(title: string, artistName: string): boolean {
  * Fetches each configured blog feed ONCE per sync — not once per artist,
  * since every feed covers every artist — and records a "blog_news"
  * MusicEvent for each item published in the last MAX_ITEM_AGE_DAYS whose
- * title mentions an artist someone actually follows.
+ * title mentions an artist someone actually follows. Feeds are fetched
+ * with bounded concurrency (FEED_CONCURRENCY): at ~20 feeds, fetching
+ * them one at a time risked the same kind of slow-sync problem the
+ * per-artist sources hit at scale.
  */
 export async function syncBlogNews(db: PrismaClient, artists: Artist[]): Promise<SyncResult> {
   const result = emptyResult();
@@ -103,7 +130,7 @@ export async function syncBlogNews(db: PrismaClient, artists: Artist[]): Promise
 
   const cutoff = Date.now() - MAX_ITEM_AGE_DAYS * 24 * 60 * 60 * 1000;
 
-  for (const feed of BLOG_FEEDS) {
+  await mapWithConcurrency(BLOG_FEEDS, FEED_CONCURRENCY, async (feed) => {
     let items: FeedItem[];
     try {
       const res = await fetchWithRetry(feed.url, {
@@ -112,12 +139,12 @@ export async function syncBlogNews(db: PrismaClient, artists: Artist[]): Promise
       });
       if (!res.ok) {
         result.errors.push(`${feed.name} fetch failed (${res.status})`);
-        continue;
+        return;
       }
       items = parseFeed(await res.text());
     } catch (err) {
       result.errors.push(`${feed.name}: ${(err as Error).message}`);
-      continue;
+      return;
     }
 
     const source = await getOrCreateSource(db, {
@@ -145,7 +172,7 @@ export async function syncBlogNews(db: PrismaClient, artists: Artist[]): Promise
         if (created) result.created++;
       }
     }
-  }
+  });
 
   return result;
 }

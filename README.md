@@ -178,13 +178,17 @@ into the same `MusicEvent` shape the rest of the app already reads from:
   search call) and caches it on `Artist.youtubeChannelId`, then reads new
   uploads via the channel's uploads playlist (1 quota unit instead of 100)
   on every later sync.
-- `blogNews.ts` — coverage from a fixed list of music blogs/magazines'
-  public RSS/Atom feeds (UK/US: DIY Magazine, The Line of Best Fit,
-  Stereogum; German: Musikexpress, Rolling Stone DE) — no API key
-  needed. This is the only source that can catch things no structured API
-  tracks, like merch or album-cycle news. Each feed is fetched once per
-  sync (not once per artist) and matched against followed artists' names
-  in the title; items older than 14 days are skipped. Off by default in
+- `blogNews.ts` — coverage from ~20 music blogs/magazines' public RSS/Atom
+  feeds, no API key needed — genre-diverse (indie, hip-hop, electronic,
+  metal, pop) and UK/US/DE/FR/Nordic (Pitchfork, NME, Clash, Rolling
+  Stone, Billboard, Mixmag, DJ Mag, Loudwire, Metal Hammer, Consequence,
+  BrooklynVegan, Rap-Up, Okayplayer, DIY Magazine, The Line of Best Fit,
+  Stereogum, Les Inrockuptibles, GAFFA; German: Musikexpress, Rolling
+  Stone DE). This is the only source that can catch things no structured
+  API tracks, like merch or album-cycle news. Each feed is fetched once
+  per sync (not once per artist), with bounded concurrency
+  (FEED_CONCURRENCY), and matched against followed artists' names in the
+  title; items older than 14 days are skipped. Off by default in
   onboarding/preferences ("Blog coverage") since blog matching is looser
   than the other three (title substring match, no structured "this is
   about artist X" field to key off).
