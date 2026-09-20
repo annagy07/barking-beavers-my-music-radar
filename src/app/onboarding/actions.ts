@@ -58,6 +58,15 @@ export async function submitOnboarding(
     });
   }
 
+  // The wizard is meant to be authoritative: running it again should leave
+  // exactly the artists just reviewed and submitted, not merge on top of
+  // whatever an earlier run left behind. Without this, re-running onboarding
+  // (e.g. reconnecting Spotify and deliberately excluding an artist this
+  // time) could never actually remove anything — upsert only ever adds.
+  await db.userArtistPreference.deleteMany({
+    where: { userId: user.id, artistId: { notIn: Array.from(seen) } },
+  });
+
   await db.userPreference.upsert({
     where: { userId: user.id },
     create: {
