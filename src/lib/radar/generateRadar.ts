@@ -381,7 +381,14 @@ function emptySections(): RadarSections {
 // artist dropping three singles this week doesn't need three "Just
 // Released" cards, just the one that scored highest (items arrive here
 // already sorted, so "first seen per artist" is "best seen per artist").
-const DEDUPE_ARTIST_SECTIONS = new Set<keyof RadarSections>(["justReleased", "upcoming"]);
+// "Blog coverage" gets the same treatment: several outlets (or one outlet,
+// several days running) writing about the same story for one artist would
+// otherwise fill the whole section and crowd out every other artist's news.
+const DEDUPE_ARTIST_SECTIONS = new Set<keyof RadarSections>([
+  "justReleased",
+  "upcoming",
+  "blogNews",
+]);
 
 function buildSections(items: RadarItem[]): RadarSections {
   const sections = emptySections();
