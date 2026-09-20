@@ -381,12 +381,21 @@ function emptySections(): RadarSections {
 // artist dropping three singles this week doesn't need three "Just
 // Released" cards, just the one that scored highest (items arrive here
 // already sorted, so "first seen per artist" is "best seen per artist").
-// "Blog coverage" gets the same treatment: several outlets (or one outlet,
-// several days running) writing about the same story for one artist would
-// otherwise fill the whole section and crowd out every other artist's news.
+// Applied to every section that's fundamentally "coverage of one story"
+// (a new video, an interview, a collab, a fact, a tour announcement, a
+// discovery pick) — one artist otherwise crowds out everyone else's news.
+// liveNearYou and presales are deliberately excluded: an artist can have
+// several genuinely different concert dates (or presales for them) in
+// range at once, and collapsing those to one would hide real events.
 const DEDUPE_ARTIST_SECTIONS = new Set<keyof RadarSections>([
   "justReleased",
   "upcoming",
+  "tours",
+  "videos",
+  "interviews",
+  "collaborations",
+  "facts",
+  "discovery",
   "blogNews",
 ]);
 
