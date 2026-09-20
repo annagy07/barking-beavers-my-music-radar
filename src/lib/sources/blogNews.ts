@@ -117,12 +117,13 @@ function titleMentionsArtist(title: string, artistName: string): boolean {
 
 /**
  * Fetches each configured blog feed ONCE per sync — not once per artist,
- * since every feed covers every artist — and records a "blog_news"
- * MusicEvent for each item published in the last MAX_ITEM_AGE_DAYS whose
- * title mentions an artist someone actually follows. Feeds are fetched
- * with bounded concurrency (FEED_CONCURRENCY): at ~20 feeds, fetching
- * them one at a time risked the same kind of slow-sync problem the
- * per-artist sources hit at scale.
+ * since every feed covers every artist — and records a "fact" MusicEvent
+ * (subtype "interesting_fact", same bucket as the Interesting Facts
+ * category — blog coverage doesn't get its own section) for each item
+ * published in the last MAX_ITEM_AGE_DAYS whose title mentions an artist
+ * someone actually follows. Feeds are fetched with bounded concurrency
+ * (FEED_CONCURRENCY): at ~20 feeds, fetching them one at a time risked
+ * the same kind of slow-sync problem the per-artist sources hit at scale.
  */
 export async function syncBlogNews(db: PrismaClient, artists: Artist[]): Promise<SyncResult> {
   const result = emptyResult();
@@ -160,7 +161,8 @@ export async function syncBlogNews(db: PrismaClient, artists: Artist[]): Promise
         if (!titleMentionsArtist(item.title, artist.name)) continue;
 
         const created = await createEventIfNew(db, {
-          type: "blog_news",
+          type: "fact",
+          subtype: "interesting_fact",
           artistId: artist.id,
           title: item.title,
           description: `Covered by ${feed.name}.`,

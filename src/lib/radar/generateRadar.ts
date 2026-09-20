@@ -373,7 +373,6 @@ function emptySections(): RadarSections {
     collaborations: [],
     facts: [],
     discovery: [],
-    blogNews: [],
   };
 }
 
@@ -396,7 +395,6 @@ const DEDUPE_ARTIST_SECTIONS = new Set<keyof RadarSections>([
   "collaborations",
   "facts",
   "discovery",
-  "blogNews",
 ]);
 
 function buildSections(items: RadarItem[]): RadarSections {
@@ -412,7 +410,6 @@ function buildSections(items: RadarItem[]): RadarSections {
     collaboration: "collaborations",
     fact: "facts",
     discovery: "discovery",
-    blog_news: "blogNews",
   };
   const seenArtistIds = new Map<keyof RadarSections, Set<string>>();
 

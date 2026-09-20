@@ -188,10 +188,13 @@ into the same `MusicEvent` shape the rest of the app already reads from:
   API tracks, like merch or album-cycle news. Each feed is fetched once
   per sync (not once per artist), with bounded concurrency
   (FEED_CONCURRENCY), and matched against followed artists' names in the
-  title; items older than 14 days are skipped. Off by default in
-  onboarding/preferences ("Blog coverage") since blog matching is looser
-  than the other three (title substring match, no structured "this is
-  about artist X" field to key off).
+  title; items older than 14 days are skipped. Recorded as a "fact"
+  MusicEvent (subtype "interesting_fact") rather than its own type — it
+  rides along under the existing "Interesting facts" category/section
+  instead of a separate "Blog coverage" one, since blog matching is
+  looser than the other three (title substring match, no structured
+  "this is about artist X" field to key off) and didn't earn its own
+  bucket.
 
 Each adapter is independent and simply no-ops (or, for blogNews, just logs
 a per-feed error and keeps going) if its own env var isn't set — you don't

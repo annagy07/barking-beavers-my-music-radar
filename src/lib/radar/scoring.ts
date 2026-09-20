@@ -48,7 +48,11 @@ export function buildCategoryMatcher(enabled: ContentCategoryId[]) {
   const byType = new Map<string, { subtypes: Set<string> | null; categoryId: ContentCategoryId }[]>();
 
   for (const id of enabled) {
+    // Defensive: a user's stored preferences can reference a category id
+    // that no longer exists (e.g. one retired after they saved it), which
+    // would otherwise throw here rather than just ignoring the stale id.
     const mapping = CATEGORY_TO_EVENT[id];
+    if (!mapping) continue;
     const list = byType.get(mapping.type) ?? [];
     list.push({
       subtypes: mapping.subtypes ? new Set(mapping.subtypes) : null,

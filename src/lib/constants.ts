@@ -54,17 +54,12 @@ export const CONTENT_CATEGORIES = [
   {
     id: "interesting_facts",
     label: "Interesting facts",
-    description: "Small, credible, worth-knowing details.",
+    description: "Small, credible, worth-knowing details, including coverage from music blogs and magazines.",
   },
   {
     id: "new_artists",
     label: "New artists",
     description: "Explainable discovery, never a black box.",
-  },
-  {
-    id: "blog_news",
-    label: "Blog coverage",
-    description: "News from music blogs and magazines — including merch/album-drop coverage no structured API tracks.",
   },
 ] as const;
 
@@ -157,7 +152,6 @@ export const EVENT_TYPE_LABELS: Record<string, string> = {
   collaboration: "Collaboration",
   fact: "Interesting fact",
   discovery: "Discovery",
-  blog_news: "Blog coverage",
 };
 
 // Maps a content category the user opted into to the underlying MusicEvent
@@ -179,7 +173,6 @@ export const CATEGORY_TO_EVENT: Record<
   behind_the_scenes: { type: "fact", subtypes: ["behind_the_scenes"] },
   interesting_facts: { type: "fact", subtypes: ["interesting_fact"] },
   new_artists: { type: "discovery" },
-  blog_news: { type: "blog_news" },
 };
 
 export const GENRES = [

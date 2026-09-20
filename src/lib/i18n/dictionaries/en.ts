@@ -224,7 +224,6 @@ export const en = {
       interviews: "Interviews",
       collaborations: "Collaborations",
       facts: "Interesting facts",
-      blogNews: "Blog coverage",
       discovery: "Discovery",
     } as Record<string, string>,
     empty:
@@ -354,12 +353,11 @@ export const en = {
     interviews: { label: "Interviews", description: "What your artists are saying, in their own words." },
     collaborations: { label: "Collaborations", description: "Features, remixes and joint projects." },
     behind_the_scenes: { label: "Behind-the-scenes stories", description: "Studio notes, process, the making-of." },
-    interesting_facts: { label: "Interesting facts", description: "Small, credible, worth-knowing details." },
-    new_artists: { label: "New artists", description: "Explainable discovery, never a black box." },
-    blog_news: {
-      label: "Blog coverage",
-      description: "News from music blogs and magazines. Includes merch and album drop coverage that no structured API tracks.",
+    interesting_facts: {
+      label: "Interesting facts",
+      description: "Small, credible, worth-knowing details, including coverage from music blogs and magazines.",
     },
+    new_artists: { label: "New artists", description: "Explainable discovery, never a black box." },
   } as Record<string, { label: string; description: string }>,
   relevance: {
     essential: { label: "Essential", description: "Never miss anything.", tierLabel: "Very relevant" },

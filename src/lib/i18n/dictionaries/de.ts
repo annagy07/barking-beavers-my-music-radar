@@ -223,7 +223,6 @@ export const de: Dictionary = {
       interviews: "Interviews",
       collaborations: "Kollaborationen",
       facts: "Interessante Fakten",
-      blogNews: "Blog Berichte",
       discovery: "Entdeckung",
     },
     empty:
@@ -353,12 +352,11 @@ export const de: Dictionary = {
     interviews: { label: "Interviews", description: "Was deine Artists sagen, in ihren eigenen Worten." },
     collaborations: { label: "Kollaborationen", description: "Features, Remixe und gemeinsame Projekte." },
     behind_the_scenes: { label: "Behind the Scenes Geschichten", description: "Studio Notizen, Entstehungsprozess, das Making of." },
-    interesting_facts: { label: "Interessante Fakten", description: "Kleine, verlässliche, wissenswerte Details." },
-    new_artists: { label: "Neue Artists", description: "Erklärbare Entdeckungen, nie eine Blackbox." },
-    blog_news: {
-      label: "Blog Berichte",
-      description: "News aus Musikblogs und Magazinen. Inklusive Merch und Album Drop Berichten, die keine strukturierte API erfasst.",
+    interesting_facts: {
+      label: "Interessante Fakten",
+      description: "Kleine, verlässliche, wissenswerte Details, inklusive Berichten aus Musikblogs und Magazinen.",
     },
+    new_artists: { label: "Neue Artists", description: "Erklärbare Entdeckungen, nie eine Blackbox." },
   },
   relevance: {
     essential: { label: "Essenziell", description: "Nichts soll dir entgehen.", tierLabel: "Sehr relevant" },

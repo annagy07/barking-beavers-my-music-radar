@@ -131,7 +131,6 @@ export function renderNewsletterHtml(radar: RadarResult, meta: NewsletterMeta) {
     renderSection("Interviews", radar.sections.interviews),
     renderSection("Collaborations", radar.sections.collaborations),
     renderSection("Interesting facts", radar.sections.facts),
-    renderSection("Blog coverage", radar.sections.blogNews),
     renderSection("Discovery", radar.sections.discovery),
   ].join("");
 

@@ -12,7 +12,6 @@ const SECTION_ORDER: (keyof RadarResult["sections"])[] = [
   "interviews",
   "collaborations",
   "facts",
-  "blogNews",
   "discovery",
 ];
 
