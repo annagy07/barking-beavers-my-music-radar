@@ -8,6 +8,15 @@ const PAPER_RAISED = "#fff1f8";
 const LINE = "#f0d7e6";
 const ACCENT = "#fd6aba";
 
+// Matches the site's .font-display (Anton, see src/app/layout.tsx) — email
+// clients can't use next/font, so this loads it from Google Fonts directly
+// via the <link> in each template's <head> instead, with the same bold
+// condensed system fallback for clients that strip external font links
+// (Gmail included) and just never load it.
+const DISPLAY_FONT = "'Anton','Arial Narrow',Arial,Helvetica,sans-serif";
+const GOOGLE_FONT_LINK =
+  '<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">';
+
 function formatDate(iso: string | null) {
   if (!iso) return null;
   return new Date(iso).toLocaleDateString("en-GB", {
@@ -36,7 +45,7 @@ function renderItem(item: RadarItem) {
               <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:${INK_SOFT};margin-bottom:4px;">
                 ${escapeHtml(item.artistName)}
               </div>
-              <div style="font-family:Georgia,'Times New Roman',serif;font-size:19px;line-height:1.3;color:${INK};font-weight:700;margin-bottom:4px;">
+              <div style="font-family:${DISPLAY_FONT};font-size:19px;line-height:1.2;color:${INK};font-weight:700;margin-bottom:4px;">
                 ${escapeHtml(item.title)}
               </div>
               ${meta ? `<div style="font-size:13px;color:${INK_SOFT};margin-bottom:6px;">${escapeHtml(meta)}</div>` : ""}
@@ -134,6 +143,7 @@ export function renderNewsletterHtml(radar: RadarResult, meta: NewsletterMeta) {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Your music radar</title>
+    ${GOOGLE_FONT_LINK}
   </head>
   <body style="margin:0;padding:0;background:${PAPER};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${PAPER};">
@@ -142,7 +152,7 @@ export function renderNewsletterHtml(radar: RadarResult, meta: NewsletterMeta) {
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:${PAPER};">
             <tr>
               <td style="padding-bottom:20px;border-bottom:2px solid ${INK};">
-                <div style="font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:900;letter-spacing:-0.01em;text-transform:uppercase;color:${ACCENT};">Barking Beaver</div>
+                <div style="font-family:${DISPLAY_FONT};font-size:26px;font-weight:400;letter-spacing:-0.01em;text-transform:uppercase;color:${ACCENT};">Barking Beaver</div>
                 <div style="font-size:12px;color:${INK_SOFT};margin-top:4px;text-transform:uppercase;letter-spacing:0.08em;">Your personal music radar — ${escapeHtml(dateLabel)}</div>
               </td>
             </tr>
@@ -187,6 +197,7 @@ export function renderLoginEmailHtml(link: string) {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Sign in to Barking Beaver</title>
+    ${GOOGLE_FONT_LINK}
   </head>
   <body style="margin:0;padding:0;background:${PAPER};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${PAPER};">
@@ -195,11 +206,11 @@ export function renderLoginEmailHtml(link: string) {
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:${PAPER};">
             <tr>
               <td style="padding-bottom:20px;border-bottom:2px solid ${INK};">
-                <div style="font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:900;letter-spacing:-0.01em;text-transform:uppercase;color:${ACCENT};">Barking Beaver</div>
+                <div style="font-family:${DISPLAY_FONT};font-size:26px;font-weight:400;letter-spacing:-0.01em;text-transform:uppercase;color:${ACCENT};">Barking Beaver</div>
               </td>
             </tr>
             <tr>
-              <td style="padding:28px 0 8px 0;font-family:Georgia,'Times New Roman',serif;font-size:22px;color:${INK};font-weight:700;">
+              <td style="padding:28px 0 8px 0;font-family:${DISPLAY_FONT};font-size:22px;color:${INK};font-weight:700;">
                 Sign in to your radar
               </td>
             </tr>
