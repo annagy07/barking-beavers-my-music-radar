@@ -190,18 +190,28 @@ that artist/type/title) and never touch any User-related table.
    Google Cloud API key) as environment variables — locally in `.env`,
    and in Vercel under Settings → Environment Variables for production.
 2. Add `CRON_SECRET` (any random string) the same way. It's required to
-   call `/api/cron/sync-content` at all — Vercel automatically attaches
+   call any `/api/cron/sync-*` route at all — Vercel automatically attaches
    it as a Bearer token to its own scheduled requests once it's set.
-3. `vercel.json` already schedules a daily sync (`/api/cron/sync-content`,
-   06:00 UTC) — Vercel picks this up automatically on deploy, no
-   dashboard configuration needed.
-4. To trigger a sync immediately instead of waiting for the schedule:
+3. `vercel.json` already schedules a daily sync for each source, staggered
+   a few minutes apart (`sync-spotify` 06:00 UTC, `sync-ticketmaster`
+   06:10, `sync-youtube` 06:20, `sync-blognews` 06:30) — Vercel picks this
+   up automatically on deploy, no dashboard configuration needed. They're
+   separate routes/invocations, not one combined route, because combining
+   all four sources across 100+ followed artists in a single Vercel
+   function call reliably exceeds its execution time limit; each source
+   alone comfortably fits.
+4. To trigger a sync immediately instead of waiting for the schedule, call
+   any of them the same way:
    ```bash
    curl -X POST -H "Authorization: Bearer <CRON_SECRET>" \
-     https://<your-domain>/api/cron/sync-content
+     https://<your-domain>/api/cron/sync-spotify
    ```
-   Returns a JSON summary (items created per source, plus any per-artist
-   errors) so you can see it actually pulled something.
+   (`sync-ticketmaster`, `sync-youtube`, `sync-blognews` work the same
+   way.) Each returns a JSON summary (items created, artists processed,
+   any per-artist errors) so you can see it actually pulled something.
+   `/api/cron/sync-content` also still exists and runs all four at once —
+   fine for a small test account, but expect it to time out at real
+   scale; prefer the per-source routes above.
 
 No other code changes needed — the adapter switches automatically.
 

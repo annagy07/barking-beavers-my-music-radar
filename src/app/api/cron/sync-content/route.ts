@@ -1,22 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkCronSecret } from "@/lib/cronAuth";
 import { syncAllContent } from "@/lib/sources/syncAll";
 
-// Vercel Cron Jobs invoke this on the schedule in vercel.json and
-// automatically send `Authorization: Bearer $CRON_SECRET` when that env
-// var is set — which doubles as the guard against anyone else calling it.
-// Can also be triggered manually (e.g. to test) with the same header.
+// Manual "sync everything at once" endpoint — fine for a small account, but
+// not what the scheduled cron uses: at real scale (100+ followed artists)
+// this reliably exceeds Vercel's function duration limit. The daily cron in
+// vercel.json instead hits the four single-source routes next to this one
+// (sync-spotify, sync-ticketmaster, sync-youtube, sync-blognews), each with
+// its own time budget. Keep this around for local/manual testing.
 export const maxDuration = 60;
 
 async function handleSync(request: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) {
-    return NextResponse.json({ error: "CRON_SECRET is not configured" }, { status: 403 });
-  }
-
-  const authHeader = request.headers.get("authorization");
-  const provided = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
-  if (!provided || provided !== secret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = checkCronSecret(request);
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
   const summary = await syncAllContent();

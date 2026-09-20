@@ -1,8 +1,20 @@
 {
   "crons": [
     {
-      "path": "/api/cron/sync-content",
+      "path": "/api/cron/sync-spotify",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/sync-ticketmaster",
+      "schedule": "10 6 * * *"
+    },
+    {
+      "path": "/api/cron/sync-youtube",
+      "schedule": "20 6 * * *"
+    },
+    {
+      "path": "/api/cron/sync-blognews",
+      "schedule": "30 6 * * *"
     }
   ]
 }
