@@ -5,10 +5,15 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { Container, Eyebrow } from "@/components/ui/Container";
 import { ArtistsManager } from "@/components/artists/ArtistsManager";
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n";
 
 export default async function ArtistsPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/onboarding");
+
+  const locale = await getLocale();
+  const t = getDictionary(locale);
 
   const preferences = await db.userArtistPreference.findMany({
     where: { userId: user.id },
@@ -34,14 +39,11 @@ export default async function ArtistsPage() {
       <SiteHeader active="/artists" />
       <main className="flex-1">
         <Container className="max-w-3xl py-12 sm:py-16">
-          <Eyebrow>Your artists</Eyebrow>
+          <Eyebrow>{t.artists.eyebrow}</Eyebrow>
           <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight">
-            Manage your artists
+            {t.artists.title}
           </h1>
-          <p className="mt-3 max-w-xl text-sm text-ink-soft">
-            Change relevance, hide anyone you&rsquo;d rather not hear about, or
-            add someone new. Changes apply to your radar immediately.
-          </p>
+          <p className="mt-3 max-w-xl text-sm text-ink-soft">{t.artists.body}</p>
 
           <div className="mt-10">
             <ArtistsManager initialArtists={artists} />

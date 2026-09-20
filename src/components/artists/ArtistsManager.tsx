@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { RELEVANCE_LEVELS, RelevanceId } from "@/lib/constants";
-import { ArtistSource, SOURCE_LABEL } from "@/lib/onboardingState";
+import { ArtistSource } from "@/lib/onboardingState";
 import { ArtistSearch, SearchArtist } from "@/components/onboarding/ArtistSearch";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 import {
   addArtistPreference,
   removeArtistPreference,
@@ -25,6 +26,7 @@ export function ArtistsManager({
 }: {
   initialArtists: ManagedArtist[];
 }) {
+  const { t } = useLocale();
   const [artists, setArtists] = useState(initialArtists);
   const [, startTransition] = useTransition();
 
@@ -87,7 +89,7 @@ export function ArtistsManager({
             <div>
               <p className="font-medium">{artist.name}</p>
               <p className="text-xs text-ink-soft">
-                {SOURCE_LABEL[artist.source]}
+                {t.sources[artist.source]}
                 {artist.genres.length > 0
                   ? ` · ${artist.genres.slice(0, 2).join(", ")}`
                   : ""}
@@ -108,7 +110,7 @@ export function ArtistsManager({
                         : "hover:bg-paper-raised")
                     }
                   >
-                    {level.label}
+                    {t.relevance[level.id].label}
                   </button>
                 ))}
               </div>
@@ -117,13 +119,13 @@ export function ArtistsManager({
                 onClick={() => handleBlocked(artist.artistId, !artist.blocked)}
                 className="font-mono text-xs uppercase tracking-wide text-ink-soft hover:text-accent"
               >
-                {artist.blocked ? "Unhide" : "Hide"}
+                {artist.blocked ? t.artists.unhide : t.artists.hide}
               </button>
               <button
                 type="button"
                 onClick={() => handleRemove(artist.artistId)}
                 className="text-ink-soft hover:text-accent"
-                aria-label={`Remove ${artist.name}`}
+                aria-label={t.artists.removeLabel(artist.name)}
               >
                 ×
               </button>
@@ -131,15 +133,13 @@ export function ArtistsManager({
           </li>
         ))}
         {artists.length === 0 && (
-          <li className="p-6 text-sm text-ink-soft">
-            No artists yet. Add one below.
-          </li>
+          <li className="p-6 text-sm text-ink-soft">{t.artists.empty}</li>
         )}
       </ul>
 
       <div className="mt-8">
         <p className="mb-2 font-mono text-xs uppercase tracking-wide text-ink-soft">
-          Add an artist
+          {t.artists.addArtist}
         </p>
         <ArtistSearch
           onPick={handleAdd}

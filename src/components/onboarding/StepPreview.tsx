@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { RadarSections } from "@/components/radar/RadarSections";
 import { WizardState } from "@/lib/onboardingState";
 import { RadarResult } from "@/lib/radar/types";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 export function StepPreview({
   state,
@@ -18,6 +19,8 @@ export function StepPreview({
   submitError: string | null;
   onSubscribe: () => void;
 }) {
+  const { t } = useLocale();
+  const s = t.onboarding.preview;
   const [radar, setRadar] = useState<RadarResult | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -53,25 +56,19 @@ export function StepPreview({
 
   return (
     <div>
-      <Eyebrow>Ready</Eyebrow>
+      <Eyebrow>{s.eyebrow}</Eyebrow>
       <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-        Your radar is ready.
+        {s.title}
       </h1>
-      <p className="mt-3 text-ink-soft">
-        This is exactly what your first digest would look like, built live
-        from the rules you just set.
-      </p>
+      <p className="mt-3 text-ink-soft">{s.body}</p>
 
       <div className="mt-8">
         {loading ? (
-          <p className="text-sm text-ink-soft">Scanning your sources…</p>
+          <p className="text-sm text-ink-soft">{s.scanning}</p>
         ) : radar ? (
-          <RadarSections radar={radar} />
+          <RadarSections radar={radar} t={t} />
         ) : (
-          <p className="text-sm text-ink-soft">
-            Couldn&rsquo;t build a preview right now — you can still subscribe
-            and check /radar afterwards.
-          </p>
+          <p className="text-sm text-ink-soft">{s.failed}</p>
         )}
       </div>
 
@@ -82,11 +79,9 @@ export function StepPreview({
           </p>
         )}
         <Button size="lg" onClick={onSubscribe} disabled={submitting}>
-          {submitting ? "Subscribing…" : "Subscribe to my radar"}
+          {submitting ? s.subscribing : s.subscribe}
         </Button>
-        <p className="mt-3 text-xs text-ink-soft">
-          You can pause or unsubscribe any time from Settings.
-        </p>
+        <p className="mt-3 text-xs text-ink-soft">{s.note}</p>
       </div>
     </div>
   );

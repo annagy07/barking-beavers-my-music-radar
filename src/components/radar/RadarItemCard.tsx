@@ -1,19 +1,24 @@
 import { WhyThis } from "@/components/ui/WhyThis";
 import { RadarItem } from "@/lib/radar/types";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
-function formatDate(iso: string | null) {
+function formatDate(iso: string | null, dateLocale: string) {
   if (!iso) return null;
-  return new Date(iso).toLocaleDateString("en-GB", {
+  return new Date(iso).toLocaleDateString(dateLocale, {
     weekday: "short",
     day: "numeric",
     month: "short",
   });
 }
 
+// No "use client" of its own, but its only caller (RadarSection) is a
+// Client Component, so this always ends up bundled and rendered client
+// side too — safe to use useLocale() here.
 export function RadarItemCard({ item }: { item: RadarItem }) {
+  const { t } = useLocale();
   const meta = [
     item.venue && item.city ? `${item.venue}, ${item.city}` : item.city,
-    formatDate(item.eventDate ?? item.publishedAt),
+    formatDate(item.eventDate ?? item.publishedAt, t.dateLocale),
   ]
     .filter(Boolean)
     .join(" · ");

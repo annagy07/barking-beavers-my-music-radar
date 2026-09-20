@@ -3,36 +3,10 @@ import { Container, Eyebrow } from "@/components/ui/Container";
 import { LinkButton } from "@/components/ui/Button";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { BrandLogoImage, BrandMark } from "@/components/ui/BrandMark";
+import { LocaleToggle } from "@/components/i18n/LocaleToggle";
 import { getSessionUserId } from "@/lib/session";
-
-const STEPS = [
-  {
-    n: "01",
-    title: "Tell us what you like",
-    body: "Connect Spotify read-only, or hand-pick artists yourself. Either way, you decide what counts.",
-  },
-  {
-    n: "02",
-    title: "We scan trusted music sources",
-    body: "Official sites, labels, venues and credible publications — weighted by how trustworthy they are, every time.",
-  },
-  {
-    n: "03",
-    title: "You receive a personalized digest",
-    body: "Releases, shows and stories that match rules you can see and edit — not a feed that never ends.",
-  },
-];
-
-const CATEGORY_PREVIEW = [
-  "New releases",
-  "Upcoming releases",
-  "Concerts",
-  "Tour announcements",
-  "Interviews",
-  "Videos",
-  "Collaborations",
-  "Interesting facts",
-];
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n";
 
 export default async function LandingPage() {
   // getCurrentUser() always falls back to the seeded demo account when
@@ -40,11 +14,13 @@ export default async function LandingPage() {
   // in) — the raw cookie check is what actually distinguishes "signed in"
   // here.
   const signedIn = Boolean(await getSessionUserId());
+  const locale = await getLocale();
+  const t = getDictionary(locale);
 
   return (
     <>
       <header className="border-b border-line">
-        <Container className="flex h-16 items-center justify-between">
+        <Container className="flex h-16 items-center justify-between gap-6">
           <BrandMark className="text-lg" />
           <div className="flex items-center gap-5 font-mono text-xs uppercase tracking-wide">
             {signedIn ? (
@@ -52,22 +28,23 @@ export default async function LandingPage() {
                 href="/radar"
                 className="text-ink-soft hover:text-accent"
               >
-                My radar →
+                {t.nav.myRadar} →
               </Link>
             ) : (
               <Link
                 href="/login"
                 className="text-ink-soft hover:text-accent"
               >
-                Log in
+                {t.nav.login}
               </Link>
             )}
             <Link
               href="/onboarding"
               className="text-ink-soft hover:text-accent"
             >
-              Build my radar →
+              {t.nav.buildMyRadar} →
             </Link>
+            <LocaleToggle locale={locale} />
           </div>
         </Container>
       </header>
@@ -77,25 +54,25 @@ export default async function LandingPage() {
         <section className="grain border-b border-line">
           <Container className="py-20 sm:py-28">
             <BrandLogoImage className="mb-8 h-24 sm:h-32" priority />
-            <Eyebrow>Not a streaming app. Not a feed.</Eyebrow>
+            <Eyebrow>{t.landing.kicker}</Eyebrow>
             <h1 className="mt-4 max-w-3xl font-display text-5xl font-semibold leading-[1.05] tracking-tight sm:text-7xl">
-              Your personal
+              {t.landing.headlineLine1}
               <br />
-              music <span className="radar-underline">radar.</span>
+              {t.landing.headlineLine2Prefix}
+              <span className="radar-underline">{t.landing.headlineLine2Underlined}</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft sm:text-xl">
-              No feed. No black-box algorithm. Just the releases, shows and
-              stories that matter to you.
+              {t.landing.sub}
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-4">
               <LinkButton href="/onboarding" size="lg">
-                Build my music radar
+                {t.landing.ctaBuild}
               </LinkButton>
               <Link
                 href="/newsletter-preview"
                 className="font-mono text-xs uppercase tracking-wide text-ink-soft hover:text-accent"
               >
-                See a sample digest →
+                {t.landing.ctaSample} →
               </Link>
             </div>
           </Container>
@@ -104,12 +81,12 @@ export default async function LandingPage() {
         {/* Three steps */}
         <section className="border-b border-line">
           <Container className="py-16 sm:py-20">
-            <Eyebrow>How it works</Eyebrow>
+            <Eyebrow>{t.landing.howItWorks}</Eyebrow>
             <div className="mt-6 grid gap-10 sm:grid-cols-3 sm:gap-8">
-              {STEPS.map((step) => (
-                <div key={step.n}>
+              {t.landing.steps.map((step, i) => (
+                <div key={step.title}>
                   <div className="font-display text-3xl text-accent">
-                    {step.n}
+                    {String(i + 1).padStart(2, "0")}
                   </div>
                   <h3 className="mt-3 font-display text-xl font-semibold">
                     {step.title}
@@ -126,12 +103,12 @@ export default async function LandingPage() {
         {/* Categories */}
         <section className="border-b border-line">
           <Container className="py-16 sm:py-20">
-            <Eyebrow>What your radar watches</Eyebrow>
+            <Eyebrow>{t.landing.watchesKicker}</Eyebrow>
             <h2 className="mt-3 max-w-xl font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-              Everything worth knowing. Nothing you didn&rsquo;t ask for.
+              {t.landing.watchesHeadline}
             </h2>
             <ul className="mt-8 grid grid-cols-2 gap-px overflow-hidden border border-line bg-line sm:grid-cols-4">
-              {CATEGORY_PREVIEW.map((c) => (
+              {t.landing.categoryPreview.map((c) => (
                 <li
                   key={c}
                   className="bg-paper px-4 py-6 text-sm font-medium sm:px-5 sm:py-8"
@@ -146,27 +123,22 @@ export default async function LandingPage() {
         {/* Principles */}
         <section className="border-b border-line">
           <Container className="py-16 sm:py-20">
-            <Eyebrow>The deal</Eyebrow>
+            <Eyebrow>{t.landing.dealKicker}</Eyebrow>
             <div className="mt-6 grid gap-8 sm:grid-cols-2">
               <div>
                 <h3 className="font-display text-xl font-semibold">
-                  You control the rules.
+                  {t.landing.controlTitle}
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                  Spotify is only an input — an easy way to tell us what you
-                  already like. It never drives recommendations on its own,
-                  and you can disconnect it or delete the imported taste data
-                  any time.
+                  {t.landing.controlBody}
                 </p>
               </div>
               <div>
                 <h3 className="font-display text-xl font-semibold">
-                  Every item explains itself.
+                  {t.landing.explainTitle}
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                  &ldquo;Why am I seeing this?&rdquo; sits under everything we
-                  send you. No opaque scoring, no engagement games — just
-                  transparent, editable rules.
+                  {t.landing.explainBody}
                 </p>
               </div>
             </div>
@@ -177,12 +149,11 @@ export default async function LandingPage() {
         <section>
           <Container className="py-20 text-center sm:py-24">
             <h2 className="mx-auto max-w-xl font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-              Tell us what you care about. We&rsquo;ll make sure you don&rsquo;t
-              miss anything relevant.
+              {t.landing.ctaHeadline}
             </h2>
             <div className="mt-8">
               <LinkButton href="/onboarding" size="lg">
-                Build my music radar
+                {t.landing.ctaBuild}
               </LinkButton>
             </div>
           </Container>

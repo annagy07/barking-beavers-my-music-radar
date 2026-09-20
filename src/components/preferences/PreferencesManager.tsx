@@ -7,11 +7,11 @@ import {
   CONCERT_RADII,
   CONTENT_CATEGORIES,
   ContentCategoryId,
-  DISCOVERY_LEVEL_LABELS,
   NEWSLETTER_FREQUENCIES,
   NewsletterFrequencyId,
 } from "@/lib/constants";
 import { PreferencePatch, updatePreferences } from "@/app/preferences/actions";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 interface PreferencesData {
   contentCategories: ContentCategoryId[];
@@ -24,6 +24,7 @@ interface PreferencesData {
 }
 
 export function PreferencesManager({ initial }: { initial: PreferencesData }) {
+  const { t } = useLocale();
   const [data, setData] = useState(initial);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [, startTransition] = useTransition();
@@ -47,16 +48,14 @@ export function PreferencesManager({ initial }: { initial: PreferencesData }) {
 
   useEffect(() => {
     if (!savedAt) return;
-    const t = setTimeout(() => setSavedAt(null), 2000);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setSavedAt(null), 2000);
+    return () => clearTimeout(timer);
   }, [savedAt]);
 
   return (
     <div className="space-y-14">
       <section>
-        <h2 className="font-display text-xl font-semibold">
-          What your radar watches
-        </h2>
+        <h2 className="font-display text-xl font-semibold">{t.preferences.watches}</h2>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {CONTENT_CATEGORIES.map((cat) => {
             const active = data.contentCategories.includes(cat.id);
@@ -72,7 +71,7 @@ export function PreferencesManager({ initial }: { initial: PreferencesData }) {
                     : "border-line hover:border-ink")
                 }
               >
-                {cat.label}
+                {t.categories[cat.id].label}
               </button>
             );
           })}
@@ -80,9 +79,7 @@ export function PreferencesManager({ initial }: { initial: PreferencesData }) {
       </section>
 
       <section>
-        <h2 className="font-display text-xl font-semibold">
-          Discovery level
-        </h2>
+        <h2 className="font-display text-xl font-semibold">{t.preferences.discoveryLevel}</h2>
         <input
           type="range"
           min={1}
@@ -96,15 +93,15 @@ export function PreferencesManager({ initial }: { initial: PreferencesData }) {
           className="mt-4 w-full accent-[var(--color-accent)]"
         />
         <p className="mt-2 text-sm text-ink-soft">
-          {data.discoveryLevel}/5 — {DISCOVERY_LEVEL_LABELS[data.discoveryLevel]}
+          {data.discoveryLevel}/5: {t.discoveryLevels[data.discoveryLevel]}
         </p>
       </section>
 
       <section>
-        <h2 className="font-display text-xl font-semibold">Concerts</h2>
+        <h2 className="font-display text-xl font-semibold">{t.preferences.concerts}</h2>
         <div className="mt-4">
           <label className="font-mono text-xs uppercase tracking-wide text-ink-soft">
-            City
+            {t.preferences.cityLabel}
           </label>
           <input
             list="pref-city-options"
@@ -126,7 +123,7 @@ export function PreferencesManager({ initial }: { initial: PreferencesData }) {
 
         <div className="mt-4">
           <p className="font-mono text-xs uppercase tracking-wide text-ink-soft">
-            Radius
+            {t.preferences.radius}
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
             {CONCERT_RADII.map((km) => (
@@ -144,7 +141,7 @@ export function PreferencesManager({ initial }: { initial: PreferencesData }) {
                     : "border-line hover:border-ink")
                 }
               >
-                {km} km
+                {km} {t.preferences.km}
               </button>
             ))}
           </div>
@@ -152,7 +149,7 @@ export function PreferencesManager({ initial }: { initial: PreferencesData }) {
 
         <div className="mt-4">
           <p className="font-mono text-xs uppercase tracking-wide text-ink-soft">
-            Lookahead
+            {t.preferences.lookahead}
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
             {CONCERT_LOOKAHEAD_DAYS.map((days) => (
@@ -170,7 +167,7 @@ export function PreferencesManager({ initial }: { initial: PreferencesData }) {
                     : "border-line hover:border-ink")
                 }
               >
-                {days} days
+                {days} {t.preferences.days}
               </button>
             ))}
           </div>
@@ -178,7 +175,7 @@ export function PreferencesManager({ initial }: { initial: PreferencesData }) {
       </section>
 
       <section>
-        <h2 className="font-display text-xl font-semibold">Newsletter</h2>
+        <h2 className="font-display text-xl font-semibold">{t.preferences.newsletter}</h2>
         <div className="mt-4 grid gap-2">
           {NEWSLETTER_FREQUENCIES.map((f) => (
             <button
@@ -195,7 +192,7 @@ export function PreferencesManager({ initial }: { initial: PreferencesData }) {
                   : "border-line hover:border-ink")
               }
             >
-              {f.label}
+              {t.frequency[f.id].label}
             </button>
           ))}
         </div>
@@ -211,9 +208,7 @@ export function PreferencesManager({ initial }: { initial: PreferencesData }) {
             }}
             className="mt-0.5 h-4 w-4 accent-[var(--color-accent)]"
           />
-          <span className="text-sm">
-            Always alert me about presales for essential artists.
-          </span>
+          <span className="text-sm">{t.preferences.presaleLabel}</span>
         </label>
       </section>
 
@@ -223,7 +218,7 @@ export function PreferencesManager({ initial }: { initial: PreferencesData }) {
           (savedAt ? "text-positive opacity-100" : "opacity-0")
         }
       >
-        Saved
+        {t.preferences.saved}
       </p>
     </div>
   );

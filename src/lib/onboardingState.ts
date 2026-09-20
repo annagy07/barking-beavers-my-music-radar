@@ -67,16 +67,3 @@ export const initialWizardState: WizardState = {
 };
 
 export const STORAGE_KEY = "mr_onboarding_draft_v1";
-
-export const RELEVANCE_TIER_LABEL: Record<RelevanceId, string> = {
-  essential: "Very relevant",
-  interested: "Relevant",
-  occasional: "Occasional",
-};
-
-export const SOURCE_LABEL: Record<ArtistSource, string> = {
-  manual: "Added manually",
-  spotify_followed_artist: "You follow on Spotify",
-  spotify_top_artist: "One of your Spotify top artists",
-  spotify_saved_music: "From your saved music on Spotify",
-};

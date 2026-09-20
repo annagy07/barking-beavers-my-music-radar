@@ -1,11 +1,8 @@
 "use client";
 
 import { Eyebrow } from "@/components/ui/Container";
-import {
-  CONTENT_CATEGORIES,
-  ContentCategoryId,
-  DISCOVERY_LEVEL_LABELS,
-} from "@/lib/constants";
+import { CONTENT_CATEGORIES, ContentCategoryId } from "@/lib/constants";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 export function StepPreferences({
   contentCategories,
@@ -18,21 +15,22 @@ export function StepPreferences({
   onToggleCategory: (id: ContentCategoryId) => void;
   onDiscoveryLevel: (level: number) => void;
 }) {
+  const { t } = useLocale();
+  const s = t.onboarding.preferences;
   const selected = new Set(contentCategories);
 
   return (
     <div>
-      <Eyebrow>Step 4</Eyebrow>
+      <Eyebrow>{s.eyebrow}</Eyebrow>
       <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-        What do you want your radar to watch?
+        {s.title}
       </h1>
-      <p className="mt-3 text-ink-soft">
-        Only what you select here can ever show up in your digest.
-      </p>
+      <p className="mt-3 text-ink-soft">{s.body}</p>
 
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
         {CONTENT_CATEGORIES.map((cat) => {
           const active = selected.has(cat.id);
+          const label = t.categories[cat.id];
           return (
             <button
               key={cat.id}
@@ -45,14 +43,14 @@ export function StepPreferences({
                   : "border-line hover:border-ink")
               }
             >
-              <p className="font-medium">{cat.label}</p>
+              <p className="font-medium">{label.label}</p>
               <p
                 className={
                   "mt-1 text-xs " +
                   (active ? "text-paper/70" : "text-ink-soft")
                 }
               >
-                {cat.description}
+                {label.description}
               </p>
             </button>
           );
@@ -60,12 +58,8 @@ export function StepPreferences({
       </div>
 
       <div className="mt-12">
-        <h2 className="font-display text-xl font-semibold">
-          How adventurous should discovery be?
-        </h2>
-        <p className="mt-1 text-sm text-ink-soft">
-          Controls the Discovery section only — never your followed artists.
-        </p>
+        <h2 className="font-display text-xl font-semibold">{s.discoveryTitle}</h2>
+        <p className="mt-1 text-sm text-ink-soft">{s.discoveryBody}</p>
         <div className="mt-5">
           <input
             type="range"
@@ -77,11 +71,11 @@ export function StepPreferences({
             className="w-full accent-[var(--color-accent)]"
           />
           <div className="mt-2 flex justify-between font-mono text-[10px] uppercase tracking-wide text-ink-soft">
-            <span>1 · Only what I know</span>
-            <span>5 · Surprise me</span>
+            <span>{s.discoveryMin}</span>
+            <span>{s.discoveryMax}</span>
           </div>
           <p className="mt-3 text-sm font-medium">
-            {discoveryLevel}/5 — {DISCOVERY_LEVEL_LABELS[discoveryLevel]}
+            {discoveryLevel}/5: {t.discoveryLevels[discoveryLevel]}
           </p>
         </div>
       </div>

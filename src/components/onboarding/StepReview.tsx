@@ -3,12 +3,9 @@
 import { useState } from "react";
 import { Eyebrow } from "@/components/ui/Container";
 import { ArtistSearch, SearchArtist } from "./ArtistSearch";
-import {
-  RELEVANCE_TIER_LABEL,
-  SOURCE_LABEL,
-  WizardArtist,
-} from "@/lib/onboardingState";
+import { WizardArtist } from "@/lib/onboardingState";
 import { RELEVANCE_LEVELS, RelevanceId } from "@/lib/constants";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 const TIERS: RelevanceId[] = ["essential", "interested", "occasional"];
 
@@ -25,20 +22,19 @@ export function StepReview({
   onSetRelevance: (artistId: string, relevance: RelevanceId) => void;
   onToggleBlocked: (artistId: string) => void;
 }) {
+  const { t } = useLocale();
+  const s = t.onboarding.review;
   const [showAdd, setShowAdd] = useState(false);
   const visible = artists.filter((a) => !a.blocked);
   const hidden = artists.filter((a) => a.blocked);
 
   return (
     <div>
-      <Eyebrow>Step 3</Eyebrow>
+      <Eyebrow>{s.eyebrow}</Eyebrow>
       <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-        Review your taste
+        {s.title}
       </h1>
-      <p className="mt-3 text-ink-soft">
-        This is how relevant each artist will be to your radar. Change
-        anything — you&rsquo;re always in control.
-      </p>
+      <p className="mt-3 text-ink-soft">{s.body}</p>
 
       <div className="mt-8 space-y-10">
         {TIERS.map((tier) => {
@@ -47,7 +43,7 @@ export function StepReview({
           return (
             <div key={tier}>
               <p className="font-mono text-xs uppercase tracking-[0.14em] text-accent">
-                {RELEVANCE_TIER_LABEL[tier]}
+                {t.relevance[tier].tierLabel}
               </p>
               <ul className="mt-3 divide-y divide-line border border-line">
                 {tierArtists.map((artist) => (
@@ -58,7 +54,7 @@ export function StepReview({
                     <div>
                       <p className="font-medium">{artist.name}</p>
                       <p className="text-xs text-ink-soft">
-                        {SOURCE_LABEL[artist.source]}
+                        {t.sources[artist.source]}
                         {artist.genres.length > 0
                           ? ` · ${artist.genres.slice(0, 2).join(", ")}`
                           : ""}
@@ -78,7 +74,7 @@ export function StepReview({
                                 : "hover:bg-paper-raised")
                             }
                           >
-                            {level.label}
+                            {t.relevance[level.id].label}
                           </button>
                         ))}
                       </div>
@@ -86,15 +82,15 @@ export function StepReview({
                         type="button"
                         onClick={() => onToggleBlocked(artist.artistId)}
                         className="font-mono text-xs uppercase tracking-wide text-ink-soft hover:text-accent"
-                        title="Don't show me this artist"
+                        title={s.hideTitle}
                       >
-                        Hide
+                        {s.hide}
                       </button>
                       <button
                         type="button"
                         onClick={() => onRemove(artist.artistId)}
                         className="text-ink-soft hover:text-accent"
-                        aria-label={`Remove ${artist.name}`}
+                        aria-label={s.removeLabel(artist.name)}
                       >
                         ×
                       </button>
@@ -110,7 +106,7 @@ export function StepReview({
       {hidden.length > 0 && (
         <div className="mt-8">
           <p className="font-mono text-xs uppercase tracking-wide text-ink-soft">
-            Don&rsquo;t show me ({hidden.length})
+            {s.dontShow(hidden.length)}
           </p>
           <ul className="mt-3 flex flex-wrap gap-2">
             {hidden.map((a) => (
@@ -124,7 +120,7 @@ export function StepReview({
                   onClick={() => onToggleBlocked(a.artistId)}
                   className="hover:text-accent"
                 >
-                  Unhide
+                  {s.unhide}
                 </button>
               </li>
             ))}
@@ -147,7 +143,7 @@ export function StepReview({
             onClick={() => setShowAdd(true)}
             className="font-mono text-xs uppercase tracking-wide text-ink-soft hover:text-accent"
           >
-            + Add another artist manually
+            {s.addAnother}
           </button>
         )}
       </div>

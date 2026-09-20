@@ -1,19 +1,19 @@
 "use client";
 
 import { Eyebrow } from "@/components/ui/Container";
-import {
-  CONTENT_CATEGORIES,
-  NEWSLETTER_FREQUENCIES,
-} from "@/lib/constants";
 import { StepId, WizardState } from "@/lib/onboardingState";
+import { useLocale } from "@/components/i18n/LocaleProvider";
+import type { Dictionary } from "@/lib/i18n";
 
 function Row({
   label,
   value,
+  editLabel,
   onEdit,
 }: {
   label: string;
   value: React.ReactNode;
+  editLabel: string;
   onEdit: () => void;
 }) {
   return (
@@ -29,7 +29,7 @@ function Row({
         onClick={onEdit}
         className="shrink-0 font-mono text-xs uppercase tracking-wide text-ink-soft underline hover:text-accent"
       >
-        Edit
+        {editLabel}
       </button>
     </div>
   );
@@ -42,63 +42,61 @@ export function StepConfirm({
   state: WizardState;
   onJump: (step: StepId) => void;
 }) {
+  const { t } = useLocale();
+  const s = t.onboarding.confirm;
   const activeArtists = state.artists.filter((a) => !a.blocked);
   const categoryLabels = state.contentCategories
-    .map((id) => CONTENT_CATEGORIES.find((c) => c.id === id)?.label ?? id)
+    .map((id: keyof Dictionary["categories"]) => t.categories[id]?.label ?? id)
     .join(", ");
-  const frequencyLabel =
-    NEWSLETTER_FREQUENCIES.find((f) => f.id === state.newsletterFrequency)
-      ?.label ?? state.newsletterFrequency;
+  const frequencyLabel = t.frequency[state.newsletterFrequency]?.label ?? state.newsletterFrequency;
 
   return (
     <div>
-      <Eyebrow>Step 8</Eyebrow>
+      <Eyebrow>{s.eyebrow}</Eyebrow>
       <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-        Confirm your preferences
+        {s.title}
       </h1>
-      <p className="mt-3 text-ink-soft">
-        Everything below is yours to change, today or any day after.
-      </p>
+      <p className="mt-3 text-ink-soft">{s.body}</p>
 
       <div className="mt-6">
         <Row
-          label="Artists"
-          value={`${activeArtists.length} tracked${
-            state.artists.length > activeArtists.length
-              ? ` · ${state.artists.length - activeArtists.length} hidden`
-              : ""
-          }`}
+          label={s.artists}
+          value={s.artistsValue(activeArtists.length, state.artists.length - activeArtists.length)}
+          editLabel={s.edit}
           onEdit={() => onJump("review")}
         />
         <Row
-          label="Watching"
-          value={categoryLabels || "Nothing selected"}
+          label={s.watching}
+          value={categoryLabels || s.nothingSelected}
+          editLabel={s.edit}
           onEdit={() => onJump("preferences")}
         />
         <Row
-          label="Discovery"
+          label={s.discovery}
           value={`${state.discoveryLevel}/5`}
+          editLabel={s.edit}
           onEdit={() => onJump("preferences")}
         />
         <Row
-          label="Concerts"
+          label={s.concerts}
           value={
             state.city
-              ? `Within ${state.concertRadiusKm} km of ${state.city}, looking ${state.concertLookaheadDays} days ahead`
-              : "No city set"
+              ? s.concertsValue(state.concertRadiusKm, state.city, state.concertLookaheadDays)
+              : s.noCity
           }
+          editLabel={s.edit}
           onEdit={() => onJump("concerts")}
         />
         <Row
-          label="Delivery"
-          value={`${frequencyLabel}${
-            state.instantPresaleAlerts ? " + instant presale alerts" : ""
-          }`}
+          label={s.delivery}
+          value={`${frequencyLabel}${state.instantPresaleAlerts ? s.deliveryPresaleSuffix : ""}`}
+          editLabel={s.edit}
           onEdit={() => onJump("frequency")}
         />
         <Row
-          label="Email"
-          value={state.email || "Not set"}
+          label={s.email}
+          value={state.email || s.notSet}
+          editLabel={s.edit}
           onEdit={() => onJump("email")}
         />
       </div>

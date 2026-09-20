@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 export interface SearchArtist {
   id: string;
@@ -12,12 +13,13 @@ export interface SearchArtist {
 export function ArtistSearch({
   onPick,
   excludeIds,
-  placeholder = "Search artists — try “indie”, “rock”, a name…",
+  placeholder,
 }: {
   onPick: (artist: SearchArtist) => void;
   excludeIds: Set<string>;
   placeholder?: string;
 }) {
+  const { t } = useLocale();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchArtist[]>([]);
   const [loading, setLoading] = useState(false);
@@ -77,16 +79,16 @@ export function ArtistSearch({
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder={placeholder}
+        placeholder={placeholder ?? t.artistSearch.placeholder}
         className="w-full border border-ink bg-paper px-4 py-3 text-base outline-none placeholder:text-ink-soft/70 focus:border-accent"
       />
       {query.trim().length > 0 && (
         <div className="mt-2 border border-line bg-paper-raised/50">
           {loading && (
-            <p className="px-4 py-3 text-sm text-ink-soft">Searching…</p>
+            <p className="px-4 py-3 text-sm text-ink-soft">{t.artistSearch.searching}</p>
           )}
           {!loading && visible.length === 0 && !showCustomOption && (
-            <p className="px-4 py-3 text-sm text-ink-soft">No matches.</p>
+            <p className="px-4 py-3 text-sm text-ink-soft">{t.artistSearch.noMatches}</p>
           )}
           <ul>
             {visible.map((artist) => (
@@ -118,8 +120,8 @@ export function ArtistSearch({
               className="block w-full border-t border-line px-4 py-3 text-left text-sm text-ink-soft hover:bg-accent hover:text-accent-ink disabled:opacity-50"
             >
               {creating
-                ? `Adding “${customName}”…`
-                : `Can’t find them? Add “${query.trim()}” manually`}
+                ? t.artistSearch.adding(customName)
+                : t.artistSearch.addManually(query.trim())}
             </button>
           )}
         </div>

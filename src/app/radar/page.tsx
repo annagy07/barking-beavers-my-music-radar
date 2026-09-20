@@ -7,10 +7,15 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { Container, Eyebrow } from "@/components/ui/Container";
 import { RadarSections } from "@/components/radar/RadarSections";
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n";
 
 export default async function RadarPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/onboarding");
+
+  const locale = await getLocale();
+  const t = getDictionary(locale);
 
   const [radar, artistCount, preference] = await Promise.all([
     generatePersonalizedRadar(user.id),
@@ -18,7 +23,7 @@ export default async function RadarPage() {
     db.userPreference.findUnique({ where: { userId: user.id } }),
   ]);
 
-  const generated = new Date(radar.generatedAt).toLocaleString("en-GB", {
+  const generated = new Date(radar.generatedAt).toLocaleString(t.dateLocale, {
     dateStyle: "long",
     timeStyle: "short",
   });
@@ -28,23 +33,20 @@ export default async function RadarPage() {
       <SiteHeader active="/radar" />
       <main className="flex-1">
         <Container className="max-w-3xl py-12 sm:py-16">
-          <Eyebrow>Your radar</Eyebrow>
+          <Eyebrow>{t.radar.eyebrow}</Eyebrow>
           <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight">
-            {radar.items.length > 0
-              ? "What's on your radar"
-              : "Your radar is quiet right now"}
+            {radar.items.length > 0 ? t.radar.titleHasItems : t.radar.titleEmpty}
           </h1>
           <p className="mt-3 text-sm text-ink-soft">
-            Generated {generated} · tracking {artistCount} artist
-            {artistCount === 1 ? "" : "s"}
-            {preference?.city ? ` · ${preference.city}` : ""} ·{" "}
+            {t.radar.generated(generated)} · {t.radar.tracking(artistCount)}
+            {preference?.city ? ` · ${t.cities[preference.city] ?? preference.city}` : ""} ·{" "}
             <Link href="/newsletter-preview" className="underline hover:text-accent">
-              see this as an email
+              {t.radar.seeAsEmail}
             </Link>
           </p>
 
           <div className="mt-10">
-            <RadarSections radar={radar} />
+            <RadarSections radar={radar} t={t} />
           </div>
         </Container>
       </main>

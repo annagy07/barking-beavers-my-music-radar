@@ -1,22 +1,27 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { BrandMark } from "@/components/ui/BrandMark";
+import { LocaleToggle } from "@/components/i18n/LocaleToggle";
 import { getSessionUserId } from "@/lib/session";
-
-const BASE_NAV = [
-  { href: "/radar", label: "Radar" },
-  { href: "/artists", label: "Artists" },
-  { href: "/preferences", label: "Preferences" },
-  { href: "/newsletter-preview", label: "Newsletter" },
-  { href: "/settings", label: "Settings" },
-];
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n";
 
 export async function SiteHeader({ active }: { active?: string }) {
   // Raw cookie check, not getCurrentUser() — that always falls back to the
   // seeded demo account when there's no cookie, so it can't tell a real
   // signed-in visitor from a signed-out one browsing the demo data.
   const signedIn = Boolean(await getSessionUserId());
-  const nav = signedIn ? BASE_NAV : [...BASE_NAV, { href: "/login", label: "Log in" }];
+  const locale = await getLocale();
+  const t = getDictionary(locale);
+
+  const baseNav = [
+    { href: "/radar", label: t.nav.radar },
+    { href: "/artists", label: t.nav.artists },
+    { href: "/preferences", label: t.nav.preferences },
+    { href: "/newsletter-preview", label: t.nav.newsletter },
+    { href: "/settings", label: t.nav.settings },
+  ];
+  const nav = signedIn ? baseNav : [...baseNav, { href: "/login", label: t.nav.login }];
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-paper/90 backdrop-blur">
@@ -40,6 +45,7 @@ export async function SiteHeader({ active }: { active?: string }) {
             </Link>
           ))}
         </nav>
+        <LocaleToggle locale={locale} />
       </Container>
     </header>
   );

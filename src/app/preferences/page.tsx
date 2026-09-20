@@ -6,10 +6,15 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { Container, Eyebrow } from "@/components/ui/Container";
 import { PreferencesManager } from "@/components/preferences/PreferencesManager";
 import { ContentCategoryId, NewsletterFrequencyId } from "@/lib/constants";
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n";
 
 export default async function PreferencesPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/onboarding");
+
+  const locale = await getLocale();
+  const t = getDictionary(locale);
 
   const preference = await db.userPreference.findUnique({
     where: { userId: user.id },
@@ -21,13 +26,11 @@ export default async function PreferencesPage() {
       <SiteHeader active="/preferences" />
       <main className="flex-1">
         <Container className="max-w-2xl py-12 sm:py-16">
-          <Eyebrow>Your preferences</Eyebrow>
+          <Eyebrow>{t.preferences.eyebrow}</Eyebrow>
           <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight">
-            Edit your preferences
+            {t.preferences.title}
           </h1>
-          <p className="mt-3 text-sm text-ink-soft">
-            Every change here re-shapes your radar immediately.
-          </p>
+          <p className="mt-3 text-sm text-ink-soft">{t.preferences.body}</p>
 
           <div className="mt-10">
             <PreferencesManager

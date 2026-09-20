@@ -3,8 +3,10 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { requestLoginLink } from "@/app/login/actions";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 export function LoginForm() {
+  const { t } = useLocale();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -12,9 +14,9 @@ export function LoginForm() {
   if (sent) {
     return (
       <p className="text-sm text-ink-soft">
-        If <strong className="text-ink">{email}</strong> has a Barking Beaver
-        account, a sign-in link is on its way — check your inbox (and spam
-        folder). The link works once and expires in 15 minutes.
+        {t.login.sentBefore}
+        <strong className="text-ink">{email}</strong>
+        {t.login.sentAfter}
       </p>
     );
   }
@@ -30,18 +32,18 @@ export function LoginForm() {
       }}
     >
       <label className="font-mono text-xs uppercase tracking-wide text-ink-soft">
-        Email address
+        {t.login.emailLabel}
       </label>
       <input
         type="email"
         required
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder="you@example.com"
+        placeholder={t.login.emailPlaceholder}
         className="mt-2 w-full border border-ink bg-paper px-4 py-3 text-base outline-none focus:border-accent"
       />
       <Button type="submit" size="lg" className="mt-5 w-full" disabled={pending}>
-        {pending ? "Sending…" : "Send me a sign-in link"}
+        {pending ? t.login.submitting : t.login.submit}
       </Button>
     </form>
   );

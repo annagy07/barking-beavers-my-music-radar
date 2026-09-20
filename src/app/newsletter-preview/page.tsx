@@ -8,37 +8,42 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { Container, Eyebrow } from "@/components/ui/Container";
 import { SendTestButton } from "@/components/newsletter/SendTestButton";
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n";
 
 export default async function NewsletterPreviewPage() {
   const user = await getCurrentUser();
   if (!user || !user.email) redirect("/onboarding");
+
+  const locale = await getLocale();
+  const t = getDictionary(locale);
 
   const [{ html }, preference] = await Promise.all([
     buildNewsletterEmail(user.id, user.email),
     db.userPreference.findUnique({ where: { userId: user.id } }),
   ]);
 
+  const frequencyId = preference?.newsletterFrequency ?? "weekly";
   const frequencyLabel =
-    NEWSLETTER_FREQUENCIES.find((f) => f.id === preference?.newsletterFrequency)
-      ?.label ?? "Weekly";
+    (t.frequency[frequencyId]?.label ??
+      NEWSLETTER_FREQUENCIES.find((f) => f.id === frequencyId)?.label ??
+      t.frequency.weekly.label);
 
   return (
     <>
       <SiteHeader active="/newsletter-preview" />
       <main className="flex-1">
         <Container className="py-12 sm:py-16">
-          <Eyebrow>Newsletter preview</Eyebrow>
+          <Eyebrow>{t.newsletterPreview.eyebrow}</Eyebrow>
           <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight">
-            Exactly what lands in your inbox
+            {t.newsletterPreview.title}
           </h1>
           <p className="mt-3 max-w-xl text-sm text-ink-soft">
-            This renders the same HTML the {frequencyLabel.toLowerCase()}{" "}
-            email would use.{" "}
-            {isSpotifyConfigured
-              ? ""
-              : "Spotify is running in mock mode locally, so imported artists come from a realistic sample library."}{" "}
-            No live email provider is required — sending uses a development
-            adapter unless RESEND_API_KEY is configured.
+            {t.newsletterPreview.bodyBefore}
+            {frequencyLabel.toLowerCase()}
+            {t.newsletterPreview.bodyAfter}{" "}
+            {isSpotifyConfigured ? "" : `${t.newsletterPreview.mockNote} `}
+            {t.newsletterPreview.devNote}
           </p>
 
           <div className="mt-8">

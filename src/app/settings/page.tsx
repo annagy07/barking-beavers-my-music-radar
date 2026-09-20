@@ -5,10 +5,15 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { Container, Eyebrow } from "@/components/ui/Container";
 import { SettingsManager } from "@/components/settings/SettingsManager";
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n";
 
 export default async function SettingsPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/onboarding");
+
+  const locale = await getLocale();
+  const t = getDictionary(locale);
 
   const [spotify, newsletter, artistCount] = await Promise.all([
     db.connectedAccount.findFirst({
@@ -28,9 +33,9 @@ export default async function SettingsPage() {
       <SiteHeader active="/settings" />
       <main className="flex-1">
         <Container className="max-w-2xl py-12 sm:py-16">
-          <Eyebrow>Settings</Eyebrow>
+          <Eyebrow>{t.settings.eyebrow}</Eyebrow>
           <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight">
-            Account &amp; connected services
+            {t.settings.title}
           </h1>
 
           <div className="mt-10">

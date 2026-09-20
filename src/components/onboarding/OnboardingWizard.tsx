@@ -24,6 +24,7 @@ import {
 } from "@/lib/onboardingState";
 import { ContentCategoryId, RelevanceId } from "@/lib/constants";
 import { submitOnboarding } from "@/app/onboarding/actions";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 const DEFAULT_RELEVANCE_BY_SOURCE: Record<WizardArtist["source"], RelevanceId> = {
   spotify_followed_artist: "essential",
@@ -46,6 +47,7 @@ function loadDraft(): { state: WizardState; step: StepId } | null {
 export function OnboardingWizard() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useLocale();
 
   const [state, setState] = useState<WizardState>(initialWizardState);
   const [step, setStep] = useState<StepId>("method");
@@ -235,14 +237,14 @@ export function OnboardingWizard() {
         consent: state.consent as true,
       });
       if (!result.ok) {
-        setSubmitError(result.error ?? "Something went wrong. Try again.");
+        setSubmitError(result.error ?? t.onboarding.preview.genericError);
         setSubmitting(false);
         return;
       }
       window.localStorage.removeItem(STORAGE_KEY);
       router.push("/radar");
     } catch {
-      setSubmitError("Something went wrong. Try again.");
+      setSubmitError(t.onboarding.preview.genericError);
       setSubmitting(false);
     }
   }
@@ -341,10 +343,10 @@ export function OnboardingWizard() {
             onClick={goBack}
             className="font-mono text-xs uppercase tracking-wide text-ink-soft hover:text-accent"
           >
-            ← Back
+            ← {t.onboarding.back}
           </button>
           <Button onClick={goNext} disabled={!canContinue}>
-            Continue
+            {t.onboarding.continue}
           </Button>
         </div>
       )}

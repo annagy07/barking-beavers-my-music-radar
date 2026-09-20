@@ -3,6 +3,7 @@
 import { Eyebrow } from "@/components/ui/Container";
 import { ArtistSearch, SearchArtist } from "./ArtistSearch";
 import { WizardArtist } from "@/lib/onboardingState";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 export function StepArtists({
   artists,
@@ -13,18 +14,17 @@ export function StepArtists({
   onAdd: (artist: SearchArtist) => void;
   onRemove: (artistId: string) => void;
 }) {
+  const { t } = useLocale();
+  const s = t.onboarding.artists;
   const minReached = artists.length >= 3;
 
   return (
     <div>
-      <Eyebrow>Step 2</Eyebrow>
+      <Eyebrow>{s.eyebrow}</Eyebrow>
       <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-        Choose at least three artists
+        {s.title}
       </h1>
-      <p className="mt-3 text-ink-soft">
-        Search across indie, pop, electronic, hip-hop, alternative and rock.
-        You&rsquo;ll set how relevant each one is on the next screen.
-      </p>
+      <p className="mt-3 text-ink-soft">{s.body}</p>
 
       <div className="mt-6">
         <ArtistSearch
@@ -35,12 +35,10 @@ export function StepArtists({
 
       <div className="mt-6">
         <p className="font-mono text-xs uppercase tracking-wide text-ink-soft">
-          Selected — {artists.length}/3 minimum
+          {s.selected(artists.length)}
         </p>
         {artists.length === 0 ? (
-          <p className="mt-3 text-sm text-ink-soft">
-            Nothing yet. Search above to get started.
-          </p>
+          <p className="mt-3 text-sm text-ink-soft">{s.empty}</p>
         ) : (
           <ul className="mt-3 flex flex-wrap gap-2">
             {artists.map((a) => (
@@ -52,7 +50,7 @@ export function StepArtists({
                 <button
                   type="button"
                   onClick={() => onRemove(a.artistId)}
-                  aria-label={`Remove ${a.name}`}
+                  aria-label={s.removeLabel(a.name)}
                   className="text-ink-soft hover:text-accent"
                 >
                   ×
@@ -64,9 +62,7 @@ export function StepArtists({
       </div>
 
       {!minReached && (
-        <p className="mt-6 text-sm text-ink-soft">
-          Pick {3 - artists.length} more to continue.
-        </p>
+        <p className="mt-6 text-sm text-ink-soft">{s.pickMore(3 - artists.length)}</p>
       )}
     </div>
   );

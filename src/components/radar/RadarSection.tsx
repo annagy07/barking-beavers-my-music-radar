@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { RadarItem } from "@/lib/radar/types";
 import { RadarItemCard } from "./RadarItemCard";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 const COLLAPSED_COUNT = 6;
 
@@ -13,6 +14,7 @@ export function RadarSection({
   heading: string;
   items: RadarItem[];
 }) {
+  const { t } = useLocale();
   const [expanded, setExpanded] = useState(false);
 
   if (items.length === 0) return null;
@@ -36,7 +38,7 @@ export function RadarSection({
           onClick={() => setExpanded((v) => !v)}
           className="mt-6 font-mono text-xs uppercase tracking-wide text-ink-soft hover:text-accent"
         >
-          {expanded ? "Show fewer" : `Show ${hiddenCount} more →`}
+          {expanded ? t.radarSections.showFewer : `${t.radarSections.showMore(hiddenCount)} →`}
         </button>
       )}
     </section>

@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Anton } from "next/font/google";
+import { getLocale } from "@/lib/i18n/locale";
+import { getDictionary } from "@/lib/i18n";
+import { LocaleProvider } from "@/components/i18n/LocaleProvider";
 import "./globals.css";
 
 // The poster logo's bold, tall, condensed all-caps wordmark — Anton is the
@@ -13,17 +16,22 @@ const anton = Anton({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: "Barking Beaver — Your personal music radar",
-  description:
-    "No feed. No black-box algorithm. Just the releases, shows and stories that matter to you.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const dict = getDictionary(locale);
+  return {
+    title: dict.siteTitle,
+    description: dict.landing.sub,
+  };
+}
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const locale = await getLocale();
+
   return (
-    <html lang="en" className={`h-full antialiased ${anton.variable}`}>
+    <html lang={locale} className={`h-full antialiased ${anton.variable}`}>
       <body className="min-h-full flex flex-col bg-paper text-ink font-sans">
-        {children}
+        <LocaleProvider locale={locale}>{children}</LocaleProvider>
       </body>
     </html>
   );

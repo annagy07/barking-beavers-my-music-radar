@@ -2,6 +2,7 @@
 
 import { Eyebrow } from "@/components/ui/Container";
 import { CITIES, CONCERT_LOOKAHEAD_DAYS, CONCERT_RADII } from "@/lib/constants";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 export function StepConcerts({
   city,
@@ -18,25 +19,26 @@ export function StepConcerts({
   onRadius: (km: number) => void;
   onLookahead: (days: number) => void;
 }) {
+  const { t } = useLocale();
+  const s = t.onboarding.concerts;
+
   return (
     <div>
-      <Eyebrow>Step 5</Eyebrow>
+      <Eyebrow>{s.eyebrow}</Eyebrow>
       <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-        Concert preferences
+        {s.title}
       </h1>
-      <p className="mt-3 text-ink-soft">
-        We&rsquo;ll only surface shows that are actually near you.
-      </p>
+      <p className="mt-3 text-ink-soft">{s.body}</p>
 
       <div className="mt-8">
         <label className="font-mono text-xs uppercase tracking-wide text-ink-soft">
-          City
+          {s.cityLabel}
         </label>
         <input
           list="city-options"
           value={city}
           onChange={(e) => onCity(e.target.value)}
-          placeholder="e.g. Berlin"
+          placeholder={s.cityPlaceholder}
           className="mt-2 w-full border border-ink bg-paper px-4 py-3 text-base outline-none focus:border-accent"
         />
         <datalist id="city-options">
@@ -57,7 +59,7 @@ export function StepConcerts({
                   : "border-line text-ink-soft hover:border-ink")
               }
             >
-              {c}
+              {t.cities[c] ?? c}
             </button>
           ))}
         </div>
@@ -65,7 +67,7 @@ export function StepConcerts({
 
       <div className="mt-8">
         <p className="font-mono text-xs uppercase tracking-wide text-ink-soft">
-          Radius
+          {s.radius}
         </p>
         <div className="mt-2 flex flex-wrap gap-2">
           {CONCERT_RADII.map((km) => (
@@ -80,7 +82,7 @@ export function StepConcerts({
                   : "border-line hover:border-ink")
               }
             >
-              {km} km
+              {km} {s.km}
             </button>
           ))}
         </div>
@@ -88,7 +90,7 @@ export function StepConcerts({
 
       <div className="mt-8">
         <p className="font-mono text-xs uppercase tracking-wide text-ink-soft">
-          How far ahead should we look?
+          {s.lookahead}
         </p>
         <div className="mt-2 flex flex-wrap gap-2">
           {CONCERT_LOOKAHEAD_DAYS.map((days) => (
@@ -103,7 +105,7 @@ export function StepConcerts({
                   : "border-line hover:border-ink")
               }
             >
-              {days} days
+              {days} {s.days}
             </button>
           ))}
         </div>
