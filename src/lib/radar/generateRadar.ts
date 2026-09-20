@@ -21,7 +21,6 @@ import {
 } from "./scoring";
 import type { RadarItem, RadarResult, RadarSections } from "./types";
 
-const MAX_TOTAL_ITEMS = 40;
 const MAX_PER_SECTION = 6;
 const LOOKAHEAD_RELEVANT_TYPES = new Set(["concert", "tour", "presale"]);
 
@@ -216,8 +215,17 @@ async function buildRadar(
     return a.id.localeCompare(b.id); // stable, deterministic tiebreak
   });
 
-  const capped = items.slice(0, MAX_TOTAL_ITEMS);
-  const sections = buildSections(capped);
+  // Cap per section FIRST, then flatten — capping the flat list to a fixed
+  // total first (as this used to) let one dominant category (e.g.
+  // hundreds of synced concerts, all scoring well on the concert-radius
+  // bonus) fill the whole cap before less flashy categories like
+  // interviews or blog news ever got a look in, even when they had
+  // qualifying items of their own. Sectioning first guarantees every
+  // enabled category gets up to MAX_PER_SECTION items if it has any.
+  const sections = buildSections(items);
+  const capped = (Object.keys(sections) as (keyof RadarSections)[]).flatMap(
+    (key) => sections[key],
+  );
 
   return {
     generatedAt: now.toISOString(),
