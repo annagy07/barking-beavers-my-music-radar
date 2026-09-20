@@ -25,8 +25,8 @@ export function BrandLogoImage({
     <Image
       src="/brand/logo.png"
       alt="Barking Beaver"
-      width={646}
-      height={796}
+      width={1197}
+      height={1254}
       priority={priority}
       className={clsx("h-auto w-auto", className)}
     />
