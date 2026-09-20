@@ -31,11 +31,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  artistPreferences       UserArtistPreference[]
-  preference               UserPreference?
-  connectedAccounts       ConnectedAccount[]
-  consents                Consent[]
-  newsletterSubscription  NewsletterSubscription?
+  artistPreferences      UserArtistPreference[]
+  preference             UserPreference?
+  connectedAccounts      ConnectedAccount[]
+  consents               Consent[]
+  newsletterSubscription NewsletterSubscription?
 }
 
 /// Consent ledger. One row per consent event, never mutated in place —
@@ -63,7 +63,7 @@ model ConnectedAccount {
   provider          String // "spotify"
   providerAccountId String?
   accessToken       String?
-  refreshToken       String?
+  refreshToken      String?
   expiresAt         DateTime?
   scope             String?
   connectedAt       DateTime  @default(now())
@@ -91,12 +91,13 @@ model SpotifyImportDraft {
 }
 
 model NewsletterSubscription {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  email     String
-  status    String   @default("active") // "active" | "paused" | "unsubscribed"
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String    @id @default(cuid())
+  userId     String    @unique
+  email      String
+  status     String    @default("active") // "active" | "paused" | "unsubscribed"
+  lastSentAt DateTime? // set by the scheduled send — used to derive "already sent today"
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -106,15 +107,15 @@ model NewsletterSubscription {
 // ---------------------------------------------------------------------------
 
 model Artist {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  genres    String // JSON string array, e.g. ["indie","post-punk"]
-  imageUrl  String?
-  country   String?
-  labelName String?
-  spotifyId String?
-  bio       String?
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  genres           String // JSON string array, e.g. ["indie","post-punk"]
+  imageUrl         String?
+  country          String?
+  labelName        String?
+  spotifyId        String?
+  bio              String?
   /// Cached to avoid re-spending YouTube search quota on every sync —
   /// resolved once, then reused (uploads playlist id derives from it).
   youtubeChannelId String?
@@ -179,7 +180,7 @@ model UserPreference {
 // ---------------------------------------------------------------------------
 
 model MusicSource {
-  id               String @id @default(cuid())
+  id               String  @id @default(cuid())
   name             String
   type             String // "official_artist_site" | "official_label" | "official_youtube" | "spotify" | "venue" | "music_publication" | "unverified_social"
   credibilityScore Int

@@ -110,6 +110,10 @@ npx eslint .       # lint
   `renderNewsletterHtml()` → `/newsletter-preview` (also sendable via a
   swappable `EmailProvider`; defaults to a console-logging dev adapter,
   switches to Resend if `RESEND_API_KEY` is set).
+- **Scheduled sending** (optional — needs `RESEND_API_KEY`) — a daily
+  Vercel Cron (`/api/cron/send-newsletters`, see below) sends the digest to
+  every active subscriber whose chosen frequency (weekly/twice-weekly/
+  daily) makes them due that day.
 - **Privacy controls** — disconnect Spotify, delete imported Spotify taste
   data (separate from disconnecting), pause/resume/unsubscribe newsletter,
   delete account. `/privacy` and `/unsubscribe` placeholders.
@@ -214,6 +218,52 @@ that artist/type/title) and never touch any User-related table.
    scale; prefer the per-source routes above.
 
 No other code changes needed — the adapter switches automatically.
+
+## Sending the newsletter for real
+
+By default the app runs in dev mode: email "sends" just log to the server
+console (`src/lib/email/provider.ts`), and nothing goes out on a schedule —
+`/newsletter-preview`'s "Send test email" button is the only way anything
+gets sent, and only to the currently signed-in user.
+
+**1. Get real delivery working (Resend):**
+
+1. Create a free account at [resend.com](https://resend.com) (3,000
+   emails/month, 100/day on the free tier).
+2. **Settings → API Keys → Create API Key**, copy the `re_...` value.
+3. Set `RESEND_API_KEY` (the key) and `EMAIL_FROM` as environment
+   variables — locally in `.env`, in Vercel under Settings → Environment
+   Variables for production.
+4. Without a verified sending domain, `EMAIL_FROM` **must** be
+   `Barking Beaver <onboarding@resend.dev>` (Resend's fixed sandbox
+   sender) — and Resend will only actually deliver to the email address
+   your Resend account itself is registered with, not arbitrary
+   recipients. To send to real subscribers you'll eventually need to
+   verify a domain you control (Resend → Domains → Add Domain, then add
+   the DNS records it gives you), after which `EMAIL_FROM` can be any
+   address `@your-domain`.
+5. `emailProvider` in `src/lib/email/provider.ts` picks Resend up
+   automatically once `RESEND_API_KEY` is set — no other code changes
+   needed. Test via `/newsletter-preview` → "Send test email".
+
+**2. Turn on scheduled sending:**
+
+`vercel.json` already schedules `/api/cron/send-newsletters` daily at
+07:00 UTC (after the content-sync crons, so the digest reflects freshly
+synced content) — picked up automatically on deploy, needs the same
+`CRON_SECRET` as the sync routes. It sends to every active subscriber
+whose `newsletterFrequency` preference makes them due that day (`weekly`
+→ Mondays, `twice_weekly` → Mondays and Thursdays, `daily` → every day),
+tracked via `NewsletterSubscription.lastSentAt` so re-running it the same
+day is a no-op. To trigger it manually:
+
+```bash
+curl -X POST -H "Authorization: Bearer <CRON_SECRET>" \
+  https://<your-domain>/api/cron/send-newsletters
+```
+
+Returns a JSON summary (candidates considered, sent, skipped as not due,
+any per-subscriber errors).
 
 ## Project structure
 

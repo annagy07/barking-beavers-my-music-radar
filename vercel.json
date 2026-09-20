@@ -15,6 +15,10 @@
     {
       "path": "/api/cron/sync-blognews",
       "schedule": "30 6 * * *"
+    },
+    {
+      "path": "/api/cron/send-newsletters",
+      "schedule": "0 7 * * *"
     }
   ]
 }
