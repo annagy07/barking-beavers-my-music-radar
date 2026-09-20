@@ -1,17 +1,23 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { BrandMark } from "@/components/ui/BrandMark";
+import { getSessionUserId } from "@/lib/session";
 
-const NAV = [
+const BASE_NAV = [
   { href: "/radar", label: "Radar" },
   { href: "/artists", label: "Artists" },
   { href: "/preferences", label: "Preferences" },
   { href: "/newsletter-preview", label: "Newsletter" },
   { href: "/settings", label: "Settings" },
-  { href: "/login", label: "Log in" },
 ];
 
-export function SiteHeader({ active }: { active?: string }) {
+export async function SiteHeader({ active }: { active?: string }) {
+  // Raw cookie check, not getCurrentUser() — that always falls back to the
+  // seeded demo account when there's no cookie, so it can't tell a real
+  // signed-in visitor from a signed-out one browsing the demo data.
+  const signedIn = Boolean(await getSessionUserId());
+  const nav = signedIn ? BASE_NAV : [...BASE_NAV, { href: "/login", label: "Log in" }];
+
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-paper/90 backdrop-blur">
       <Container className="flex h-16 items-center gap-6">
@@ -19,7 +25,7 @@ export function SiteHeader({ active }: { active?: string }) {
           <BrandMark className="text-lg" />
         </Link>
         <nav className="flex flex-1 items-center gap-5 overflow-x-auto font-mono text-xs uppercase tracking-wide">
-          {NAV.map((item) => (
+          {nav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
