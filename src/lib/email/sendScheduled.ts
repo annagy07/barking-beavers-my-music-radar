@@ -2,6 +2,7 @@ import "server-only";
 import { db } from "@/lib/db";
 import { generatePersonalizedRadar } from "@/lib/radar/generateRadar";
 import { NEWSLETTER_FREQUENCIES } from "@/lib/constants";
+import { getAppOrigin } from "@/lib/appUrl";
 import { renderNewsletterHtml } from "./render";
 import { emailProvider } from "./provider";
 
@@ -37,9 +38,10 @@ export async function buildNewsletterEmail(
   userId: string,
   email: string,
 ): Promise<{ subject: string; html: string }> {
-  const [radar, preference] = await Promise.all([
+  const [radar, preference, origin] = await Promise.all([
     generatePersonalizedRadar(userId),
     db.userPreference.findUnique({ where: { userId } }),
+    getAppOrigin(),
   ]);
 
   const frequencyLabel =
@@ -50,8 +52,13 @@ export async function buildNewsletterEmail(
     email,
     frequencyLabel,
     city: preference?.city ?? null,
-    unsubscribeUrl: "/unsubscribe",
-    preferencesUrl: "/preferences",
+    // Absolute, not relative — a relative href in an email has no page to
+    // resolve against, so mail clients guess at a host instead of just
+    // failing (see the /login link bug this fixed: a bare path turned
+    // into a broken https://api/... URL).
+    unsubscribeUrl: `${origin}/unsubscribe`,
+    preferencesUrl: `${origin}/preferences`,
+    privacyUrl: `${origin}/privacy`,
   });
 
   return { subject: "Your music radar", html };

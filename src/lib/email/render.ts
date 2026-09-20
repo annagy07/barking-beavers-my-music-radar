@@ -83,6 +83,7 @@ export interface NewsletterMeta {
   city: string | null;
   unsubscribeUrl: string;
   preferencesUrl: string;
+  privacyUrl: string;
 }
 
 export function renderNewsletterHtml(radar: RadarResult, meta: NewsletterMeta) {
@@ -146,7 +147,7 @@ export function renderNewsletterHtml(radar: RadarResult, meta: NewsletterMeta) {
                       You control every rule behind this email — edit them any time in
                       <a href="${meta.preferencesUrl}" style="color:${ACCENT};">Preferences</a>.
                       <a href="${meta.unsubscribeUrl}" style="color:${ACCENT};margin-left:8px;">Unsubscribe</a>
-                      <a href="/privacy" style="color:${ACCENT};margin-left:8px;">Privacy policy</a>
+                      <a href="${meta.privacyUrl}" style="color:${ACCENT};margin-left:8px;">Privacy policy</a>
                     </td>
                   </tr>
                 </table>

@@ -6,6 +6,7 @@ import { emailProvider } from "@/lib/email/provider";
 import { renderLoginEmailHtml } from "@/lib/email/render";
 import { createLoginToken } from "@/lib/auth/loginToken";
 import { clearSessionUserId } from "@/lib/session";
+import { getAppOrigin } from "@/lib/appUrl";
 
 /** Always returns the same shape regardless of whether an account exists
  * for that email — otherwise the response itself would leak which emails
@@ -16,8 +17,8 @@ export async function requestLoginLink(email: string): Promise<{ ok: true }> {
 
   if (user) {
     const token = await createLoginToken(user.id);
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-    const link = `${appUrl}/api/auth/verify?token=${token}`;
+    const origin = await getAppOrigin();
+    const link = `${origin}/api/auth/verify?token=${token}`;
     await emailProvider.sendEmail({
       to: normalized,
       subject: "Sign in to Barking Beaver",

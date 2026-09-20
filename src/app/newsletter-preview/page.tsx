@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
 import { db } from "@/lib/db";
-import { generatePersonalizedRadar } from "@/lib/radar/generateRadar";
-import { renderNewsletterHtml } from "@/lib/email/render";
+import { buildNewsletterEmail } from "@/lib/email/sendScheduled";
 import { isSpotifyConfigured } from "@/lib/spotify";
 import { NEWSLETTER_FREQUENCIES } from "@/lib/constants";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -14,22 +13,14 @@ export default async function NewsletterPreviewPage() {
   const user = await getCurrentUser();
   if (!user || !user.email) redirect("/onboarding");
 
-  const [radar, preference] = await Promise.all([
-    generatePersonalizedRadar(user.id),
+  const [{ html }, preference] = await Promise.all([
+    buildNewsletterEmail(user.id, user.email),
     db.userPreference.findUnique({ where: { userId: user.id } }),
   ]);
 
   const frequencyLabel =
     NEWSLETTER_FREQUENCIES.find((f) => f.id === preference?.newsletterFrequency)
       ?.label ?? "Weekly";
-
-  const html = renderNewsletterHtml(radar, {
-    email: user.email,
-    frequencyLabel,
-    city: preference?.city ?? null,
-    unsubscribeUrl: "/unsubscribe",
-    preferencesUrl: "/preferences",
-  });
 
   return (
     <>
