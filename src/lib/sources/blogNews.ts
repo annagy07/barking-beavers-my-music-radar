@@ -115,13 +115,50 @@ function titleMentionsArtist(title: string, artistName: string): boolean {
   return re.test(title);
 }
 
+// No adapter actually produces "tour" MusicEvents otherwise (Ticketmaster
+// only yields per-venue "concert"/"presale" rows, never a tour-level
+// announcement) — this is currently the only real source for the "Tour
+// announcements" category, keyword-matched from the headline since blog
+// RSS gives us no structured field to key off. English + German, the two
+// languages BLOG_FEEDS actually publishes in. A title matching none of
+// these still isn't lost, it just falls through to "fact" below instead.
+const TOUR_KEYWORDS = [
+  "tour",
+  "tour dates",
+  "on sale",
+  "on-sale",
+  "presale",
+  "pre-sale",
+  "tickets",
+  "reschedule",
+  "rescheduled",
+  "postponed",
+  "additional dates",
+  "extra dates",
+  "co-headline",
+  "tournee",
+  "konzert",
+  "konzerttermine",
+  "vorverkauf",
+  "zusatzkonzert",
+  "zusatztermin",
+  "tourdaten",
+];
+
+export function looksLikeTourNews(title: string): boolean {
+  const lower = title.toLowerCase();
+  return TOUR_KEYWORDS.some((keyword) => lower.includes(keyword));
+}
+
 /**
  * Fetches each configured blog feed ONCE per sync — not once per artist,
- * since every feed covers every artist — and records a "fact" MusicEvent
- * (subtype "interesting_fact", same bucket as the Interesting Facts
- * category — blog coverage doesn't get its own section) for each item
- * published in the last MAX_ITEM_AGE_DAYS whose title mentions an artist
- * someone actually follows. Feeds are fetched with bounded concurrency
+ * since every feed covers every artist — and records a MusicEvent for
+ * each item published in the last MAX_ITEM_AGE_DAYS whose title mentions
+ * an artist someone actually follows. Tour/concert-flavored headlines
+ * (see looksLikeTourNews) become a "tour" event so they land in Tour
+ * announcements; everything else is a "fact" (subtype "interesting_fact"),
+ * the same bucket as the Interesting Facts category — blog coverage
+ * doesn't get its own section. Feeds are fetched with bounded concurrency
  * (FEED_CONCURRENCY): at ~20 feeds, fetching them one at a time risked
  * the same kind of slow-sync problem the per-artist sources hit at scale.
  */
@@ -160,9 +197,10 @@ export async function syncBlogNews(db: PrismaClient, artists: Artist[]): Promise
       for (const artist of artists) {
         if (!titleMentionsArtist(item.title, artist.name)) continue;
 
+        const isTourNews = looksLikeTourNews(item.title);
         const created = await createEventIfNew(db, {
-          type: "fact",
-          subtype: "interesting_fact",
+          type: isTourNews ? "tour" : "fact",
+          subtype: isTourNews ? undefined : "interesting_fact",
           artistId: artist.id,
           title: item.title,
           description: `Covered by ${feed.name}.`,

@@ -194,7 +194,12 @@ into the same `MusicEvent` shape the rest of the app already reads from:
   instead of a separate "Blog coverage" one, since blog matching is
   looser than the other three (title substring match, no structured
   "this is about artist X" field to key off) and didn't earn its own
-  bucket.
+  bucket. A headline that looks tour/concert-flavored (looksLikeTourNews:
+  keyword match, English + German) is recorded as "tour" instead — with
+  no self-serve concert API available (Ticketmaster only, Bandsintown is
+  partner-only), this is currently the only real source Tour
+  announcements has at all; Ticketmaster itself only ever produces
+  per-venue "concert"/"presale" rows, never a tour-level announcement.
 
 Each adapter is independent and simply no-ops (or, for blogNews, just logs
 a per-feed error and keeps going) if its own env var isn't set — you don't
