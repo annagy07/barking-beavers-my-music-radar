@@ -3,6 +3,7 @@ import { Container, Eyebrow } from "@/components/ui/Container";
 import { LinkButton } from "@/components/ui/Button";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { BrandLogoImage, BrandMark } from "@/components/ui/BrandMark";
+import { getSessionUserId } from "@/lib/session";
 
 const STEPS = [
   {
@@ -33,19 +34,34 @@ const CATEGORY_PREVIEW = [
   "Interesting facts",
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  // getCurrentUser() always falls back to the seeded demo account when
+  // there's no session cookie (so reviewers can browse without signing
+  // in) — the raw cookie check is what actually distinguishes "signed in"
+  // here.
+  const signedIn = Boolean(await getSessionUserId());
+
   return (
     <>
       <header className="border-b border-line">
         <Container className="flex h-16 items-center justify-between">
           <BrandMark className="text-lg" />
           <div className="flex items-center gap-5 font-mono text-xs uppercase tracking-wide">
-            <Link
-              href="/login"
-              className="text-ink-soft hover:text-accent"
-            >
-              Log in
-            </Link>
+            {signedIn ? (
+              <Link
+                href="/radar"
+                className="text-ink-soft hover:text-accent"
+              >
+                My radar →
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="text-ink-soft hover:text-accent"
+              >
+                Log in
+              </Link>
+            )}
             <Link
               href="/onboarding"
               className="text-ink-soft hover:text-accent"
