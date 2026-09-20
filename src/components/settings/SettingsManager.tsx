@@ -13,6 +13,7 @@ import {
   resumeNewsletter,
   unsubscribeNewsletter,
 } from "@/app/settings/actions";
+import { logOut } from "@/app/login/actions";
 
 export function SettingsManager({
   email,
@@ -119,18 +120,29 @@ export function SettingsManager({
           Delivery
         </h2>
         <Card className="mt-3">
-          <p className="font-medium">{email}</p>
-          <p className="mt-1 text-xs text-ink-soft">
-            Newsletter is currently{" "}
-            <span
-              className={
-                status === "active" ? "text-positive" : "text-accent"
-              }
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="font-medium">{email}</p>
+              <p className="mt-1 text-xs text-ink-soft">
+                Newsletter is currently{" "}
+                <span
+                  className={
+                    status === "active" ? "text-positive" : "text-accent"
+                  }
+                >
+                  {status}
+                </span>
+                .
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => startTransition(() => logOut())}
+              className="shrink-0 font-mono text-xs uppercase tracking-wide text-ink-soft hover:text-accent"
             >
-              {status}
-            </span>
-            .
-          </p>
+              Log out
+            </button>
+          </div>
           <div className="mt-4 flex flex-wrap gap-2">
             {status === "active" && (
               <button

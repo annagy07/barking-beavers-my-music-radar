@@ -1,6 +1,6 @@
 import "server-only";
 
-export interface SendNewsletterParams {
+export interface SendEmailParams {
   to: string;
   subject: string;
   html: string;
@@ -8,13 +8,13 @@ export interface SendNewsletterParams {
 
 export interface EmailProvider {
   readonly name: string;
-  sendNewsletter(params: SendNewsletterParams): Promise<{ id: string }>;
+  sendEmail(params: SendEmailParams): Promise<{ id: string }>;
 }
 
 /** Default dev adapter: logs to the server console instead of sending. */
 const consoleEmailProvider: EmailProvider = {
   name: "console",
-  async sendNewsletter({ to, subject }) {
+  async sendEmail({ to, subject }) {
     const id = `dev-${Date.now()}`;
     console.log(
       `[email:console] would send "${subject}" to ${to} (id=${id}). Visit /newsletter-preview to see the rendered version.`,
@@ -26,7 +26,7 @@ const consoleEmailProvider: EmailProvider = {
 /** Thin adapter for Resend, used only when RESEND_API_KEY is configured. */
 const resendEmailProvider: EmailProvider = {
   name: "resend",
-  async sendNewsletter({ to, subject, html }) {
+  async sendEmail({ to, subject, html }) {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {

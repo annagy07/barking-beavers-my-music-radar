@@ -8,6 +8,7 @@ const NAV = [
   { href: "/preferences", label: "Preferences" },
   { href: "/newsletter-preview", label: "Newsletter" },
   { href: "/settings", label: "Settings" },
+  { href: "/login", label: "Log in" },
 ];
 
 export function SiteHeader({ active }: { active?: string }) {

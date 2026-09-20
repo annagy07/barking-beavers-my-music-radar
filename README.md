@@ -91,6 +91,11 @@ npx eslint .       # lint
 - **Manual artist selection** — autocomplete search against the seeded
   artist catalog (`/api/artists/search`), with on-the-fly creation of
   artists that aren't in it.
+- **Sign in** (`/login`) — passwordless: enter the email your subscription
+  is under, get a single-use magic link (15 min expiry) via the same
+  `EmailProvider` the newsletter uses. No password anywhere in the schema.
+  Session is still just the lightweight cookie from `src/lib/session.ts` —
+  this only adds a way back in in on a browser that never onboarded.
 - **Taste review** — relevance tiers (essential/interested/occasional),
   remove, "don't show me" (blocked), add more — all editable again later
   from `/artists`.

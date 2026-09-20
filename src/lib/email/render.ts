@@ -159,3 +159,49 @@ export function renderNewsletterHtml(radar: RadarResult, meta: NewsletterMeta) {
   </body>
 </html>`;
 }
+
+export function renderLoginEmailHtml(link: string) {
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Sign in to Barking Beaver</title>
+  </head>
+  <body style="margin:0;padding:0;background:${PAPER};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${PAPER};">
+      <tr>
+        <td align="center" style="padding:32px 16px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:${PAPER};">
+            <tr>
+              <td style="padding-bottom:20px;border-bottom:2px solid ${INK};">
+                <div style="font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:900;letter-spacing:-0.01em;text-transform:uppercase;color:${ACCENT};">Barking Beaver</div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px 0 8px 0;font-family:Georgia,'Times New Roman',serif;font-size:22px;color:${INK};font-weight:700;">
+                Sign in to your radar
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:0 0 24px 0;font-size:14px;line-height:1.6;color:${INK_SOFT};">
+                Click below to sign in — no password needed. This link works once and expires in 15 minutes.
+              </td>
+            </tr>
+            <tr>
+              <td style="padding-bottom:28px;">
+                <a href="${link}" style="display:inline-block;background:${INK};color:${PAPER};font-size:14px;font-weight:600;text-decoration:none;padding:12px 28px;">Sign in</a>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding-top:20px;border-top:1px solid ${LINE};font-size:12px;color:${INK_SOFT};line-height:1.6;">
+                Didn&rsquo;t request this? You can safely ignore this email — no one can sign in without clicking the link above.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+}

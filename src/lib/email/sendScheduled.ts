@@ -91,7 +91,7 @@ export async function sendScheduledNewsletters(
 
     try {
       const { subject, html } = await buildNewsletterEmail(sub.userId, sub.email);
-      await emailProvider.sendNewsletter({ to: sub.email, subject, html });
+      await emailProvider.sendEmail({ to: sub.email, subject, html });
       await db.newsletterSubscription.update({
         where: { id: sub.id },
         data: { lastSentAt: now },

@@ -36,6 +36,24 @@ model User {
   connectedAccounts      ConnectedAccount[]
   consents               Consent[]
   newsletterSubscription NewsletterSubscription?
+  loginTokens            LoginToken[]
+}
+
+/// Single-use magic-link tokens for signing back in with the email a
+/// subscription was created under (e.g. on a new device/browser, where the
+/// onboarding session cookie was never set). Not a password — there isn't
+/// one — just a short-lived, one-time proof of email ownership.
+model LoginToken {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 /// Consent ledger. One row per consent event, never mutated in place —
