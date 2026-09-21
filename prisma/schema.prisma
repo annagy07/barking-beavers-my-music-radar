@@ -38,6 +38,7 @@ model User {
   newsletterSubscription NewsletterSubscription?
   loginTokens            LoginToken[]
   sentDigestItems        SentDigestItem[]
+  radarEditions          RadarEdition[]
 }
 
 /// Single-use magic-link tokens for signing back in with the email a
@@ -138,6 +139,27 @@ model SentDigestItem {
 
   @@unique([userId, musicEventId])
   @@index([userId])
+}
+
+/// A frozen snapshot of exactly what a real scheduled send emailed —
+/// written once per successful send in sendScheduledNewsletters, never on
+/// a preview or test-send. Powers both the "radar library" (every past
+/// edition, browsable) and /radar itself, which shows the latest edition
+/// rather than recomputing live, so the site always matches what actually
+/// landed in the inbox instead of silently drifting from it over time
+/// (e.g. once SentDigestItem starts excluding already-mailed items from
+/// future sends).
+model RadarEdition {
+  id          String   @id @default(cuid())
+  userId      String
+  generatedAt DateTime
+  itemCount   Int
+  radarJson   String // JSON-serialized RadarResult (see lib/radar/types.ts)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, generatedAt])
 }
 
 // ---------------------------------------------------------------------------

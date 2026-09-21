@@ -16,6 +16,7 @@ export async function SiteHeader({ active }: { active?: string }) {
 
   const baseNav = [
     { href: "/radar", label: t.nav.radar },
+    { href: "/library", label: t.nav.library },
     { href: "/artists", label: t.nav.artists },
     { href: "/preferences", label: t.nav.preferences },
     { href: "/newsletter-preview", label: t.nav.newsletter },

@@ -2,6 +2,7 @@ import "server-only";
 import { db } from "@/lib/db";
 import { generatePersonalizedRadar } from "@/lib/radar/generateRadar";
 import type { RadarResult, RadarSections } from "@/lib/radar/types";
+import { saveRadarEdition } from "@/lib/radar/editions";
 import { NEWSLETTER_FREQUENCIES } from "@/lib/constants";
 import { getAppOrigin } from "@/lib/appUrl";
 import { renderNewsletterHtml } from "./render";
@@ -106,7 +107,10 @@ export interface SendScheduledSummary {
  * digest (SentDigestItem) — otherwise an item stays in scoring range and
  * would just get resent every cycle until it aged out or got crowded out
  * by newer items. If that leaves nothing new, the send is skipped rather
- * than mailing an empty "nothing new" digest.
+ * than mailing an empty "nothing new" digest. A successful send also
+ * freezes a RadarEdition snapshot of exactly what went out — /radar shows
+ * the latest one instead of recomputing live, so the site never drifts
+ * from what's actually in the inbox.
  */
 export async function sendScheduledNewsletters(
   now: Date = new Date(),
@@ -170,6 +174,7 @@ export async function sendScheduledNewsletters(
         })),
         skipDuplicates: true,
       });
+      await saveRadarEdition(sub.userId, filteredRadar);
       summary.sent++;
     } catch (err) {
       summary.errors.push(`${sub.email}: ${(err as Error).message}`);

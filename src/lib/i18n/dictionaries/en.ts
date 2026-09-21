@@ -4,6 +4,7 @@
 export const en = {
   nav: {
     radar: "Radar",
+    library: "Library",
     artists: "Artists",
     preferences: "Preferences",
     newsletter: "Newsletter",
@@ -212,6 +213,9 @@ export const en = {
     generated: (date: string) => `Generated ${date}`,
     tracking: (count: number) => (count === 1 ? "tracking 1 artist" : `tracking ${count} artists`),
     seeAsEmail: "see this as an email",
+    viewLibrary: "view past radars",
+    liveNotice:
+      "This is a live preview, not yet an actual edition. Once your first scheduled email goes out, this page will always match it exactly.",
   },
   radarSections: {
     headings: {
@@ -231,6 +235,15 @@ export const en = {
     showFewer: "Show fewer",
     showMore: (count: number) => `Show ${count} more`,
     whyThis: "Why am I seeing this?",
+  },
+  library: {
+    eyebrow: "Radar library",
+    title: "Every radar you've been sent",
+    body: "Each entry below is a frozen snapshot of exactly what one of your scheduled emails contained, newest first.",
+    empty: "Nothing here yet. Your first scheduled email will start your library.",
+    itemCount: (count: number) => (count === 1 ? "1 item" : `${count} items`),
+    backToLibrary: "Back to library",
+    notFound: "That edition doesn't exist, or isn't yours.",
   },
   artists: {
     eyebrow: "Your artists",

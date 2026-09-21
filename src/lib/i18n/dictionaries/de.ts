@@ -3,6 +3,7 @@ import type { Dictionary } from "../types";
 export const de: Dictionary = {
   nav: {
     radar: "Radar",
+    library: "Bibliothek",
     artists: "Artists",
     preferences: "Einstellungen",
     newsletter: "Newsletter",
@@ -211,6 +212,9 @@ export const de: Dictionary = {
     generated: (date: string) => `Erstellt ${date}`,
     tracking: (count: number) => (count === 1 ? "verfolgt 1 Artist" : `verfolgt ${count} Artists`),
     seeAsEmail: "als E Mail ansehen",
+    viewLibrary: "frühere Radars ansehen",
+    liveNotice:
+      "Das ist eine Live-Vorschau, noch keine echte Ausgabe. Sobald deine erste geplante E-Mail rausgeht, zeigt diese Seite immer genau das, was darin stand.",
   },
   radarSections: {
     headings: {
@@ -230,6 +234,15 @@ export const de: Dictionary = {
     showFewer: "Weniger anzeigen",
     showMore: (count: number) => `${count} weitere anzeigen`,
     whyThis: "Warum sehe ich das?",
+  },
+  library: {
+    eyebrow: "Radar Bibliothek",
+    title: "Jeder Radar, den du bekommen hast",
+    body: "Jeder Eintrag unten ist eine eingefrorene Momentaufnahme von genau dem, was in einer deiner geplanten E Mails stand, neueste zuerst.",
+    empty: "Hier ist noch nichts. Deine erste geplante E Mail startet deine Bibliothek.",
+    itemCount: (count: number) => (count === 1 ? "1 Eintrag" : `${count} Einträge`),
+    backToLibrary: "Zurück zur Bibliothek",
+    notFound: "Diese Ausgabe gibt es nicht oder sie gehört nicht dir.",
   },
   artists: {
     eyebrow: "Deine Artists",

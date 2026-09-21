@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/session";
 import { generatePersonalizedRadar } from "@/lib/radar/generateRadar";
+import { getLatestRadarEdition } from "@/lib/radar/editions";
 import { db } from "@/lib/db";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -17,11 +18,20 @@ export default async function RadarPage() {
   const locale = await getLocale();
   const t = getDictionary(locale);
 
-  const [radar, artistCount, preference] = await Promise.all([
-    generatePersonalizedRadar(user.id),
+  const [latestEdition, artistCount, preference] = await Promise.all([
+    getLatestRadarEdition(user.id),
     db.userArtistPreference.count({ where: { userId: user.id, blocked: false } }),
     db.userPreference.findUnique({ where: { userId: user.id } }),
   ]);
+
+  // Once a real scheduled email has gone out, /radar mirrors that exact
+  // edition rather than recomputing live — otherwise the site would
+  // silently drift from the inbox over time (SentDigestItem excludes
+  // already-mailed items from future sends, but a live computation here
+  // wouldn't know that). Before the first send, there's nothing to mirror
+  // yet, so this falls back to a live preview instead of an empty page.
+  const isLive = !latestEdition;
+  const radar = latestEdition ?? (await generatePersonalizedRadar(user.id));
 
   const generated = new Date(radar.generatedAt).toLocaleString(t.dateLocale, {
     dateStyle: "long",
@@ -43,7 +53,22 @@ export default async function RadarPage() {
             <Link href="/newsletter-preview" className="underline hover:text-accent">
               {t.radar.seeAsEmail}
             </Link>
+            {!isLive && (
+              <>
+                {" "}
+                ·{" "}
+                <Link href="/library" className="underline hover:text-accent">
+                  {t.radar.viewLibrary}
+                </Link>
+              </>
+            )}
           </p>
+
+          {isLive && (
+            <p className="mt-4 border border-line bg-paper-raised/60 px-4 py-3 text-sm text-ink-soft">
+              {t.radar.liveNotice}
+            </p>
+          )}
 
           <div className="mt-10">
             <RadarSections radar={radar} t={t} />
