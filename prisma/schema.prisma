@@ -241,6 +241,18 @@ model UserPreference {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+/// Geocoding cache for concert-radius matching (see src/lib/radar/geo.ts) —
+/// "query" is a normalized (trimmed, lowercased) city string, resolved via
+/// Google's Geocoding API once and reused for every user and every radar
+/// build afterward rather than paying for the same lookup repeatedly.
+model CityLocation {
+  id        String   @id @default(cuid())
+  query     String   @unique
+  lat       Float
+  lng       Float
+  createdAt DateTime @default(now())
+}
+
 // ---------------------------------------------------------------------------
 // Content graph
 // ---------------------------------------------------------------------------

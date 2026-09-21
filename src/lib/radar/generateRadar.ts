@@ -6,7 +6,7 @@ import {
   ContentCategoryId,
   RelevanceId,
 } from "@/lib/constants";
-import { getDistanceKm } from "./geo";
+import { haversineKm, normalizeCityKey, resolveCityLocations, type LatLng } from "./geo";
 import {
   buildCategoryMatcher,
   explicitArtistMatchScore,
@@ -46,16 +46,26 @@ export interface RadarPreferenceInput {
 }
 
 /** The closest of the user's chosen cities to a concert's venue city, or
- * null if none of them have a known distance to it (see getDistanceKm) —
- * treated the same as "out of range" rather than guessed at. */
+ * null if the venue city couldn't be geocoded or none of the user's cities
+ * could — treated the same as "out of range" rather than guessed at. An
+ * exact same-city match (any spelling Google normalizes the same way)
+ * always resolves to 0 without needing a geocoding lookup at all. */
 function nearestCity(
+  cityLocations: Map<string, LatLng>,
   cities: string[],
   eventCity: string,
 ): { city: string; distanceKm: number } | null {
+  const exact = cities.find((c) => normalizeCityKey(c) === normalizeCityKey(eventCity));
+  if (exact) return { city: exact, distanceKm: 0 };
+
+  const eventLoc = cityLocations.get(normalizeCityKey(eventCity));
+  if (!eventLoc) return null;
+
   let best: { city: string; distanceKm: number } | null = null;
   for (const city of cities) {
-    const distanceKm = getDistanceKm(city, eventCity);
-    if (distanceKm === null) continue;
+    const loc = cityLocations.get(normalizeCityKey(city));
+    if (!loc) continue;
+    const distanceKm = haversineKm(eventLoc, loc);
     if (!best || distanceKm < best.distanceKm) best = { city, distanceKm };
   }
   return best;
@@ -130,6 +140,17 @@ async function buildRadar(
     }
   }
 
+  // Resolved once up front for every distinct city involved (the user's
+  // chosen cities plus every concert's venue city) rather than per event —
+  // one geocoding pass per radar build instead of one per concert.
+  const concertVenueCities = new Set(
+    events.filter((e) => e.type === "concert" && e.city).map((e) => e.city!),
+  );
+  const cityLocations =
+    preference.cities.length > 0
+      ? await resolveCityLocations([...preference.cities, ...concertVenueCities])
+      : new Map<string, LatLng>();
+
   const maxDiscoveryItems = Math.max(0, preference.discoveryLevel - 1);
   let discoveryCount = 0;
 
@@ -187,7 +208,7 @@ async function buildRadar(
     let nearestConcertCity: string | null = null;
     if (event.type === "concert") {
       if (preference.cities.length === 0 || !event.city) continue;
-      const nearest = nearestCity(preference.cities, event.city);
+      const nearest = nearestCity(cityLocations, preference.cities, event.city);
       if (!nearest || nearest.distanceKm > preference.concertRadiusKm) continue;
       nearestConcertCity = nearest.city;
     }
