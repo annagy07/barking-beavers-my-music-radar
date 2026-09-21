@@ -64,14 +64,22 @@ export function MobileNav({
       </button>
 
       {open && (
-        <nav className="absolute inset-x-0 top-16 z-30 border-b border-line bg-paper px-4 py-4 font-mono text-xs uppercase tracking-wide shadow-sm">
-          <ul className="flex flex-col gap-4">
+        <nav className="absolute inset-x-0 top-16 z-30 border-b border-line bg-paper px-2 py-2 font-mono text-xs uppercase tracking-wide shadow-sm">
+          <ul className="flex flex-col">
             {nav.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
                   onClick={() => setOpen(false)}
-                  className={active === item.href ? "text-accent" : "text-ink-soft hover:text-ink"}
+                  className={
+                    // A left border plus background, not just a color
+                    // change, marks hover/focus/current — and the padding
+                    // gives each row a comfortably large tap target.
+                    "block border-l-2 px-3 py-3 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent " +
+                    (active === item.href
+                      ? "border-accent bg-paper-raised text-accent"
+                      : "border-transparent text-ink-soft hover:border-ink hover:bg-paper-raised hover:text-ink")
+                  }
                 >
                   {item.label}
                 </Link>

@@ -37,10 +37,13 @@ export async function SiteHeader({ active }: { active?: string }) {
               key={item.href}
               href={item.href}
               className={
-                "shrink-0 " +
+                // Underline, not just a color shift, marks hover/focus/current —
+                // color alone isn't a reliable enough signal (contrast, color
+                // blindness), so every state below pairs a border with it.
+                "shrink-0 border-b-2 pb-0.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent " +
                 (active === item.href
-                  ? "text-accent"
-                  : "text-ink-soft hover:text-ink")
+                  ? "border-accent text-accent"
+                  : "border-transparent text-ink-soft hover:border-ink hover:text-ink")
               }
             >
               {item.label}
