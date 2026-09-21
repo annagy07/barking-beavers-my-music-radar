@@ -53,13 +53,26 @@ interface SpotifyArtistObject {
   images?: { url: string }[];
 }
 
+// Spotify's error body (e.g. "Insufficient client scope", "User not
+// registered in the Developer Dashboard") is far more useful for
+// diagnosing a 4xx than the bare status code, so every call below surfaces
+// it in the thrown error instead of swallowing it.
+async function readErrorBody(res: Response): Promise<string> {
+  try {
+    const text = (await res.text()).slice(0, 300);
+    return text ? ` - ${text}` : "";
+  } catch {
+    return "";
+  }
+}
+
 async function spotifyFetch(path: string, accessToken: string) {
   const res = await fetch(`${API_BASE}${path}`, {
     headers: { Authorization: `Bearer ${accessToken}` },
     cache: "no-store",
   });
   if (!res.ok) {
-    throw new Error(`Spotify API ${path} failed: ${res.status}`);
+    throw new Error(`Spotify API ${path} failed: ${res.status}${await readErrorBody(res)}`);
   }
   return res.json();
 }
@@ -104,7 +117,7 @@ async function exchangeCodeAt(
   });
   const res = await fetch(TOKEN_URL, { method: "POST", headers: tokenRequestHeaders(), body });
   if (!res.ok) {
-    throw new Error(`Spotify token exchange failed: ${res.status}`);
+    throw new Error(`Spotify token exchange failed: ${res.status}${await readErrorBody(res)}`);
   }
   const json = await res.json();
   return {
@@ -160,7 +173,7 @@ export const realSpotifyAdapter: SpotifyAdapter = {
     });
     const res = await fetch(TOKEN_URL, { method: "POST", headers: tokenRequestHeaders(), body });
     if (!res.ok) {
-      throw new Error(`Spotify token refresh failed: ${res.status}`);
+      throw new Error(`Spotify token refresh failed: ${res.status}${await readErrorBody(res)}`);
     }
     const json = await res.json();
     return {
@@ -188,7 +201,7 @@ export const realSpotifyAdapter: SpotifyAdapter = {
       body: JSON.stringify({ name, description, public: false }),
     });
     if (!res.ok) {
-      throw new Error(`Spotify create playlist failed: ${res.status}`);
+      throw new Error(`Spotify create playlist failed: ${res.status}${await readErrorBody(res)}`);
     }
     const json = await res.json();
     return { id: json.id as string };
@@ -207,7 +220,9 @@ export const realSpotifyAdapter: SpotifyAdapter = {
         body: JSON.stringify({ uris: batch }),
       });
       if (!res.ok) {
-        throw new Error(`Spotify add tracks to playlist failed: ${res.status}`);
+        throw new Error(
+          `Spotify add tracks to playlist failed: ${res.status}${await readErrorBody(res)}`,
+        );
       }
     }
   },

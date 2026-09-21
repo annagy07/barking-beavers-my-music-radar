@@ -81,7 +81,8 @@ async function getFreshAccessToken(account: ConnectedAccount): Promise<string | 
       },
     });
     return tokenSet.accessToken;
-  } catch {
+  } catch (err) {
+    console.error("Spotify token refresh failed", err);
     return null;
   }
 }
