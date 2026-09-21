@@ -36,7 +36,7 @@ export function RadarSection({
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="mt-6 font-mono text-xs uppercase tracking-wide text-ink-soft hover:text-accent"
+          className="mt-6 w-full border border-ink px-4 py-2.5 text-center font-mono text-xs uppercase tracking-wide transition-colors hover:bg-ink hover:text-paper sm:w-auto"
         >
           {expanded ? t.radarSections.showFewer : `${t.radarSections.showMore(hiddenCount)} →`}
         </button>
