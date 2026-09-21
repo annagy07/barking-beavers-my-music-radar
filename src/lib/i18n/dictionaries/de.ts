@@ -414,7 +414,8 @@ export const de: Dictionary = {
     London: "London",
     Amsterdam: "Amsterdam",
   },
-  consentCopy: "Ich möchte meinen persönlichen Musik Radar per E Mail erhalten.",
+  consentCopy:
+    "Ja, ich möchte meinen persönlichen Musik Radar Newsletter per E Mail erhalten und bestätige damit mein Abonnement.",
   siteTitle: "Barking Beaver | Dein persönlicher Musik Radar",
   dateLocale: "de-DE",
 };

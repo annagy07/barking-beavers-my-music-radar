@@ -415,7 +415,8 @@ export const en = {
     London: "London",
     Amsterdam: "Amsterdam",
   } as Record<string, string>,
-  consentCopy: "I want to receive my personalized music radar via email.",
+  consentCopy:
+    "Yes, I want to receive my personalized music radar newsletter via email and therefore confirm my subscription.",
   siteTitle: "Barking Beaver | Your personal music radar",
   dateLocale: "en-GB",
 };
