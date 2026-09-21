@@ -51,10 +51,12 @@ export interface SpotifyAdapter {
     codeVerifier: string;
   }): Promise<SpotifyTokenSet>;
   refreshAccessToken(refreshToken: string): Promise<SpotifyTokenSet>;
-  getSpotifyUserId(accessToken: string): Promise<string>;
+  /** POST /me/playlists — not /users/{id}/playlists, which Spotify's
+   * February 2026 Web API migration removed for Development Mode apps
+   * (it now 403s for every caller). /me/playlists needs no separate user
+   * id lookup. */
   createPlaylist(params: {
     accessToken: string;
-    spotifyUserId: string;
     name: string;
     description: string;
   }): Promise<SpotifyPlaylist>;

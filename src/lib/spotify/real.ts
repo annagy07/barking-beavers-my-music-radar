@@ -186,13 +186,8 @@ export const realSpotifyAdapter: SpotifyAdapter = {
     };
   },
 
-  async getSpotifyUserId(accessToken) {
-    const me = await spotifyFetch("/me", accessToken);
-    return me.id as string;
-  },
-
-  async createPlaylist({ accessToken, spotifyUserId, name, description }) {
-    const res = await fetch(`${API_BASE}/users/${spotifyUserId}/playlists`, {
+  async createPlaylist({ accessToken, name, description }) {
+    const res = await fetch(`${API_BASE}/me/playlists`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,

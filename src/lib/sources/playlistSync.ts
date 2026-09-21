@@ -113,10 +113,8 @@ export async function syncReleaseRadarPlaylistForUser(userId: string): Promise<P
 
   let playlistId = account.playlistId;
   if (!playlistId) {
-    const spotifyUserId = await spotifyAdapter.getSpotifyUserId(accessToken);
     const playlist = await spotifyAdapter.createPlaylist({
       accessToken,
-      spotifyUserId,
       name: PLAYLIST_NAME,
       description: PLAYLIST_DESCRIPTION,
     });

@@ -123,10 +123,6 @@ export const mockSpotifyAdapter: SpotifyAdapter = {
     };
   },
 
-  async getSpotifyUserId() {
-    return "mock-spotify-user";
-  },
-
   async createPlaylist() {
     mockPlaylistTracks = [];
     return { id: `mock-playlist-${Date.now()}` };
