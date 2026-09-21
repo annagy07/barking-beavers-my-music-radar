@@ -296,8 +296,6 @@ export const de: Dictionary = {
     title: "Genau das, was in deinem Postfach landet",
     bodyBefore: "Das zeigt dasselbe HTML, das der ",
     bodyAfter: " Newsletter verwenden würde.",
-    mockNote: "Spotify läuft hier lokal im Testmodus, importierte Artists stammen daher aus einer realistischen Beispielbibliothek.",
-    devNote: "Kein echter E Mail Anbieter nötig. Der Versand läuft über einen Entwicklungsadapter, solange RESEND_API_KEY nicht eingerichtet ist.",
     sendTest: "Test E Mail senden",
     sending: "Wird gesendet…",
     sentConsole: "Über den Entwicklungs Adapter gesendet. Schau in deine Terminal Ausgabe.",

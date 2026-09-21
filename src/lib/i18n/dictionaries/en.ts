@@ -297,8 +297,6 @@ export const en = {
     title: "Exactly what lands in your inbox",
     bodyBefore: "This renders the same HTML the ",
     bodyAfter: " email would use.",
-    mockNote: "Spotify is running in mock mode locally, so imported artists come from a realistic sample library.",
-    devNote: "No live email provider is required. Sending uses a development adapter unless RESEND_API_KEY is configured.",
     sendTest: "Send test email",
     sending: "Sending…",
     sentConsole: "Sent via the dev console adapter. Check your terminal output.",

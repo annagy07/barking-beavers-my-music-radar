@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import { buildNewsletterEmail } from "@/lib/email/sendScheduled";
-import { isSpotifyConfigured } from "@/lib/spotify";
 import { NEWSLETTER_FREQUENCIES } from "@/lib/constants";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -41,9 +40,7 @@ export default async function NewsletterPreviewPage() {
           <p className="mt-3 max-w-xl text-sm text-ink-soft">
             {t.newsletterPreview.bodyBefore}
             {frequencyLabel.toLowerCase()}
-            {t.newsletterPreview.bodyAfter}{" "}
-            {isSpotifyConfigured ? "" : `${t.newsletterPreview.mockNote} `}
-            {t.newsletterPreview.devNote}
+            {t.newsletterPreview.bodyAfter}
           </p>
 
           <div className="mt-8">
