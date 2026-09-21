@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Eyebrow } from "@/components/ui/Container";
+import { CityAutocompleteInput } from "@/components/ui/CityAutocompleteInput";
 import { CITIES, CONCERT_LOOKAHEAD_DAYS, CONCERT_RADII } from "@/lib/constants";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 
@@ -22,17 +22,10 @@ export function StepConcerts({
 }) {
   const { t } = useLocale();
   const s = t.onboarding.concerts;
-  const [customCity, setCustomCity] = useState("");
   const customCities = cities.filter((c) => !(CITIES as readonly string[]).includes(c));
 
-  function addCustomCity() {
-    const trimmed = customCity.trim();
-    if (!trimmed || cities.includes(trimmed)) {
-      setCustomCity("");
-      return;
-    }
-    onToggleCity(trimmed);
-    setCustomCity("");
+  function addCustomCity(city: string) {
+    if (!cities.includes(city)) onToggleCity(city);
   }
 
   return (
@@ -65,33 +58,13 @@ export function StepConcerts({
           ))}
         </div>
 
-        <div className="mt-3 flex gap-2">
-          <input
-            list="city-options"
-            value={customCity}
-            onChange={(e) => setCustomCity(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                addCustomCity();
-              }
-            }}
+        <div className="mt-3">
+          <CityAutocompleteInput
+            onAdd={addCustomCity}
             placeholder={s.cityPlaceholder}
-            className="w-full border border-ink bg-paper px-4 py-3 text-base outline-none focus:border-accent"
+            addLabel={s.addCity}
           />
-          <button
-            type="button"
-            onClick={addCustomCity}
-            className="shrink-0 border border-ink px-4 py-3 text-sm hover:bg-ink hover:text-paper"
-          >
-            {s.addCity}
-          </button>
         </div>
-        <datalist id="city-options">
-          {CITIES.map((c) => (
-            <option key={c} value={c} />
-          ))}
-        </datalist>
 
         {customCities.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">

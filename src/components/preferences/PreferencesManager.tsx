@@ -12,6 +12,7 @@ import {
 } from "@/lib/constants";
 import { PreferencePatch, updatePreferences } from "@/app/preferences/actions";
 import { useLocale } from "@/components/i18n/LocaleProvider";
+import { CityAutocompleteInput } from "@/components/ui/CityAutocompleteInput";
 
 interface PreferencesData {
   contentCategories: ContentCategoryId[];
@@ -28,7 +29,6 @@ export function PreferencesManager({ initial }: { initial: PreferencesData }) {
   const [data, setData] = useState(initial);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [, startTransition] = useTransition();
-  const [customCity, setCustomCity] = useState("");
 
   function save(patch: PreferencePatch) {
     startTransition(async () => {
@@ -54,11 +54,8 @@ export function PreferencesManager({ initial }: { initial: PreferencesData }) {
     save({ cities: next });
   }
 
-  function addCustomCity() {
-    const trimmed = customCity.trim();
-    setCustomCity("");
-    if (!trimmed || data.cities.includes(trimmed)) return;
-    toggleCity(trimmed);
+  function addCustomCity(city: string) {
+    if (!data.cities.includes(city)) toggleCity(city);
   }
 
   useEffect(() => {
@@ -136,32 +133,13 @@ export function PreferencesManager({ initial }: { initial: PreferencesData }) {
             ))}
           </div>
 
-          <div className="mt-3 flex gap-2">
-            <input
-              list="pref-city-options"
-              value={customCity}
-              onChange={(e) => setCustomCity(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addCustomCity();
-                }
-              }}
-              className="w-full border border-ink bg-paper px-4 py-2.5 text-sm outline-none focus:border-accent"
+          <div className="mt-3">
+            <CityAutocompleteInput
+              onAdd={addCustomCity}
+              placeholder={t.onboarding.concerts.cityPlaceholder}
+              addLabel={t.onboarding.concerts.addCity}
             />
-            <button
-              type="button"
-              onClick={addCustomCity}
-              className="shrink-0 border border-ink px-3 py-1.5 text-sm hover:bg-ink hover:text-paper"
-            >
-              {t.onboarding.concerts.addCity}
-            </button>
           </div>
-          <datalist id="pref-city-options">
-            {CITIES.map((c) => (
-              <option key={c} value={c} />
-            ))}
-          </datalist>
 
           {data.cities.filter((c) => !(CITIES as readonly string[]).includes(c)).length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
