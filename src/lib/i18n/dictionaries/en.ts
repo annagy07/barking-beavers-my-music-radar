@@ -12,6 +12,7 @@ export const en = {
     login: "Log in",
     myRadar: "My radar",
     buildMyRadar: "Build my radar",
+    menu: "Menu",
   },
   footer: {
     buildMyRadar: "Build my radar",

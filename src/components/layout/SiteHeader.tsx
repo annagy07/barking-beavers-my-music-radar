@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { LocaleToggle } from "@/components/i18n/LocaleToggle";
+import { MobileNav } from "@/components/layout/MobileNav";
 import { getSessionUserId } from "@/lib/session";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n";
@@ -30,7 +31,7 @@ export async function SiteHeader({ active }: { active?: string }) {
         <Link href="/radar" className="shrink-0">
           <BrandMark className="text-lg" />
         </Link>
-        <nav className="flex flex-1 items-center gap-5 overflow-x-auto font-mono text-xs uppercase tracking-wide">
+        <nav className="hidden flex-1 items-center gap-5 overflow-x-auto font-mono text-xs uppercase tracking-wide sm:flex">
           {nav.map((item) => (
             <Link
               key={item.href}
@@ -46,7 +47,10 @@ export async function SiteHeader({ active }: { active?: string }) {
             </Link>
           ))}
         </nav>
-        <LocaleToggle locale={locale} />
+        <div className="ml-auto flex items-center gap-3 sm:ml-0">
+          <LocaleToggle locale={locale} />
+          <MobileNav nav={nav} active={active} menuLabel={t.nav.menu} />
+        </div>
       </Container>
     </header>
   );

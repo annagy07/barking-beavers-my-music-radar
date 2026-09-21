@@ -11,6 +11,7 @@ export const de: Dictionary = {
     login: "Anmelden",
     myRadar: "Mein Radar",
     buildMyRadar: "Radar erstellen",
+    menu: "Menü",
   },
   footer: {
     buildMyRadar: "Radar erstellen",
