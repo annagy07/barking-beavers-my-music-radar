@@ -24,7 +24,14 @@ export function LocaleToggle({ locale }: { locale: Locale }) {
         type="button"
         onClick={() => switchTo("en")}
         aria-pressed={locale === "en"}
-        className={clsx(locale === "en" ? "text-accent" : "text-ink-soft hover:text-ink")}
+        // Tailwind's reset sets buttons to cursor:default (unlike links),
+        // which hid the usual hover affordance here — cursor-pointer
+        // restores it for the state that's actually clickable.
+        className={clsx(
+          locale === "en"
+            ? "cursor-default text-accent"
+            : "cursor-pointer text-ink-soft hover:text-ink",
+        )}
       >
         EN
       </button>
@@ -33,7 +40,11 @@ export function LocaleToggle({ locale }: { locale: Locale }) {
         type="button"
         onClick={() => switchTo("de")}
         aria-pressed={locale === "de"}
-        className={clsx(locale === "de" ? "text-accent" : "text-ink-soft hover:text-ink")}
+        className={clsx(
+          locale === "de"
+            ? "cursor-default text-accent"
+            : "cursor-pointer text-ink-soft hover:text-ink",
+        )}
       >
         DE
       </button>
