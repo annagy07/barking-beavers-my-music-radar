@@ -252,6 +252,14 @@ export function OnboardingWizard() {
       }
       window.localStorage.removeItem(STORAGE_KEY);
       router.push("/radar");
+      // submitOnboarding just set a brand-new session cookie — without this,
+      // the client-side Router Cache can still serve whatever /radar (or
+      // its layout) resolved to before that cookie existed (e.g. the
+      // seeded demo user's radar, which getCurrentUser() falls back to
+      // when signed out), and the mismatch between that stale RSC payload
+      // and the now-authenticated session can leave the page unresponsive
+      // to nav clicks until a manual reload.
+      router.refresh();
     } catch {
       setSubmitError(t.onboarding.preview.genericError);
       setSubmitting(false);
