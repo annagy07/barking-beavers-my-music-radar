@@ -10,6 +10,18 @@ export interface SearchArtist {
   country: string | null;
 }
 
+/** A raw /api/artists/search result — id is null for a Spotify catalog hit
+ * that isn't in our own Artist table yet, resolved into a real local row
+ * (via /api/artists/from-spotify) only once actually picked. */
+interface SearchHit {
+  id: string | null;
+  spotifyId: string | null;
+  name: string;
+  genres: string[];
+  imageUrl: string | null;
+  country: string | null;
+}
+
 export function ArtistSearch({
   onPick,
   excludeIds,
@@ -21,10 +33,9 @@ export function ArtistSearch({
 }) {
   const { t } = useLocale();
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchArtist[]>([]);
+  const [results, setResults] = useState<SearchHit[]>([]);
   const [loading, setLoading] = useState(false);
-  const [customName, setCustomName] = useState("");
-  const [creating, setCreating] = useState(false);
+  const [pendingKey, setPendingKey] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -44,14 +55,47 @@ export function ArtistSearch({
     };
   }, [query]);
 
-  const visible = results.filter((r) => !excludeIds.has(r.id));
+  const visible = results.filter((r) => !(r.id && excludeIds.has(r.id)));
   const showCustomOption =
     query.trim().length > 1 &&
     !loading &&
     !visible.some((r) => r.name.toLowerCase() === query.trim().toLowerCase());
 
+  async function pick(hit: SearchHit) {
+    if (hit.id) {
+      onPick({ id: hit.id, name: hit.name, genres: hit.genres, country: hit.country });
+      setQuery("");
+      return;
+    }
+
+    // A Spotify-only hit isn't in our catalog yet — create it now, with
+    // Spotify's genres and image already in hand, rather than falling
+    // back to the bare "add manually" path below.
+    const key = hit.spotifyId ?? hit.name;
+    setPendingKey(key);
+    try {
+      const res = await fetch("/api/artists/from-spotify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          spotifyId: hit.spotifyId,
+          name: hit.name,
+          genres: hit.genres,
+          imageUrl: hit.imageUrl,
+        }),
+      });
+      const data = await res.json();
+      if (data.artist) {
+        onPick(data.artist);
+        setQuery("");
+      }
+    } finally {
+      setPendingKey(null);
+    }
+  }
+
   async function createCustomArtist(name: string) {
-    setCreating(true);
+    setPendingKey(name);
     try {
       const res = await fetch("/api/artists", {
         method: "POST",
@@ -67,10 +111,9 @@ export function ArtistSearch({
           country: null,
         });
         setQuery("");
-        setCustomName("");
       }
     } finally {
-      setCreating(false);
+      setPendingKey(null);
     }
   }
 
@@ -91,36 +134,35 @@ export function ArtistSearch({
             <p className="px-4 py-3 text-sm text-ink-soft">{t.artistSearch.noMatches}</p>
           )}
           <ul>
-            {visible.map((artist) => (
-              <li key={artist.id}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onPick(artist);
-                    setQuery("");
-                  }}
-                  className="flex w-full items-center justify-between gap-3 border-b border-line px-4 py-3 text-left text-sm last:border-b-0 hover:bg-accent hover:text-accent-ink"
-                >
-                  <span className="font-medium">{artist.name}</span>
-                  <span className="font-mono text-xs uppercase tracking-wide text-ink-soft group-hover:text-accent-ink">
-                    {artist.genres.slice(0, 2).join(", ")}
-                  </span>
-                </button>
-              </li>
-            ))}
+            {visible.map((hit) => {
+              const key = hit.id ?? hit.spotifyId ?? hit.name;
+              const pending = pendingKey === (hit.spotifyId ?? hit.name);
+              return (
+                <li key={key}>
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => pick(hit)}
+                    className="flex w-full items-center justify-between gap-3 border-b border-line px-4 py-3 text-left text-sm last:border-b-0 hover:bg-accent hover:text-accent-ink disabled:opacity-50"
+                  >
+                    <span className="font-medium">{hit.name}</span>
+                    <span className="font-mono text-xs uppercase tracking-wide text-ink-soft group-hover:text-accent-ink">
+                      {hit.genres.slice(0, 2).join(", ")}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
           </ul>
           {showCustomOption && (
             <button
               type="button"
-              disabled={creating}
-              onClick={() => {
-                setCustomName(query.trim());
-                createCustomArtist(query.trim());
-              }}
+              disabled={pendingKey === query.trim()}
+              onClick={() => createCustomArtist(query.trim())}
               className="block w-full border-t border-line px-4 py-3 text-left text-sm text-ink-soft hover:bg-accent hover:text-accent-ink disabled:opacity-50"
             >
-              {creating
-                ? t.artistSearch.adding(customName)
+              {pendingKey === query.trim()
+                ? t.artistSearch.adding(query.trim())
                 : t.artistSearch.addManually(query.trim())}
             </button>
           )}
