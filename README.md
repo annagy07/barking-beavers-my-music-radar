@@ -274,7 +274,14 @@ synced content) — picked up automatically on deploy, needs the same
 whose `newsletterFrequency` preference makes them due that day (`weekly`
 → Mondays, `twice_weekly` → Mondays and Thursdays, `daily` → every day),
 tracked via `NewsletterSubscription.lastSentAt` so re-running it the same
-day is a no-op. To trigger it manually:
+day is a no-op. Each send excludes anything already delivered to that
+user in an earlier digest (`SentDigestItem`) — an item otherwise stays in
+scoring range and would just get resent every cycle until it aged out or
+got crowded out by newer items; if that leaves nothing new, the send is
+skipped rather than mailing an empty digest. Only the real scheduled send
+does this — `/newsletter-preview` and its "Send test email" button always
+render the current, unfiltered radar, and never count toward a user's
+dedup history. To trigger it manually:
 
 ```bash
 curl -X POST -H "Authorization: Bearer <CRON_SECRET>" \

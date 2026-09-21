@@ -1,6 +1,7 @@
 import "server-only";
 import { db } from "@/lib/db";
 import { generatePersonalizedRadar } from "@/lib/radar/generateRadar";
+import type { RadarResult, RadarSections } from "@/lib/radar/types";
 import { NEWSLETTER_FREQUENCIES } from "@/lib/constants";
 import { getAppOrigin } from "@/lib/appUrl";
 import { renderNewsletterHtml } from "./render";
@@ -31,15 +32,37 @@ export function isDueToday(frequency: string, lastSentAt: Date | null, now: Date
   return true;
 }
 
+/** Drops anything already delivered in a previous scheduled send (see
+ * SentDigestItem) from a radar's items/sections, keeping the two in sync —
+ * a section that only contained already-seen items just goes empty rather
+ * than getting reshuffled. */
+function filterOutSentItems(radar: RadarResult, sentIds: Set<string>): RadarResult {
+  if (sentIds.size === 0) return radar;
+
+  const items = radar.items.filter((item) => !sentIds.has(item.id));
+  const sectionKeys = Object.keys(radar.sections) as (keyof RadarSections)[];
+  const sections = sectionKeys.reduce((acc, key) => {
+    acc[key] = radar.sections[key].filter((item) => !sentIds.has(item.id));
+    return acc;
+  }, {} as RadarSections);
+
+  return { ...radar, items, sections };
+}
+
 /** Builds the same subject/HTML the manual "Send test email" button uses —
  * shared so the scheduled sender and the manual test path can never drift
- * apart in what they actually send. */
+ * apart in what they actually send. Pass `radarOverride` to render a
+ * pre-built radar (the scheduled sender's already-filtered one) instead of
+ * generating a fresh, unfiltered one — the preview page and the manual
+ * test-send button rely on the default (nothing filtered out), since
+ * neither should be affected by, or count toward, a user's dedup history. */
 export async function buildNewsletterEmail(
   userId: string,
   email: string,
+  radarOverride?: RadarResult,
 ): Promise<{ subject: string; html: string }> {
   const [radar, preference, origin] = await Promise.all([
-    generatePersonalizedRadar(userId),
+    radarOverride ?? generatePersonalizedRadar(userId),
     db.userPreference.findUnique({ where: { userId } }),
     getAppOrigin(),
   ]);
@@ -68,6 +91,7 @@ export interface SendScheduledSummary {
   candidates: number;
   sent: number;
   skippedNotDue: number;
+  skippedNoNewContent: number;
   errors: string[];
 }
 
@@ -77,11 +101,23 @@ export interface SendScheduledSummary {
  * Meant to be called once a day (see /api/cron/send-newsletters) — calling
  * it more than once on the same day is still safe, it just does nothing
  * for anyone already sent to today.
+ *
+ * Each send excludes anything already delivered to that user in an earlier
+ * digest (SentDigestItem) — otherwise an item stays in scoring range and
+ * would just get resent every cycle until it aged out or got crowded out
+ * by newer items. If that leaves nothing new, the send is skipped rather
+ * than mailing an empty "nothing new" digest.
  */
 export async function sendScheduledNewsletters(
   now: Date = new Date(),
 ): Promise<SendScheduledSummary> {
-  const summary: SendScheduledSummary = { candidates: 0, sent: 0, skippedNotDue: 0, errors: [] };
+  const summary: SendScheduledSummary = {
+    candidates: 0,
+    sent: 0,
+    skippedNotDue: 0,
+    skippedNoNewContent: 0,
+    errors: [],
+  };
 
   const subscriptions = await db.newsletterSubscription.findMany({
     where: { status: "active" },
@@ -97,11 +133,42 @@ export async function sendScheduledNewsletters(
     }
 
     try {
-      const { subject, html } = await buildNewsletterEmail(sub.userId, sub.email);
+      const [radar, alreadySent] = await Promise.all([
+        generatePersonalizedRadar(sub.userId),
+        db.sentDigestItem.findMany({
+          where: { userId: sub.userId },
+          select: { musicEventId: true },
+        }),
+      ]);
+      const filteredRadar = filterOutSentItems(
+        radar,
+        new Set(alreadySent.map((row) => row.musicEventId)),
+      );
+
+      if (filteredRadar.items.length === 0) {
+        // Nothing new since last time — still mark today as handled so a
+        // manual re-trigger later today doesn't redo this same check, but
+        // don't spend an email on an empty "nothing new" digest.
+        await db.newsletterSubscription.update({
+          where: { id: sub.id },
+          data: { lastSentAt: now },
+        });
+        summary.skippedNoNewContent++;
+        continue;
+      }
+
+      const { subject, html } = await buildNewsletterEmail(sub.userId, sub.email, filteredRadar);
       await emailProvider.sendEmail({ to: sub.email, subject, html });
       await db.newsletterSubscription.update({
         where: { id: sub.id },
         data: { lastSentAt: now },
+      });
+      await db.sentDigestItem.createMany({
+        data: filteredRadar.items.map((item) => ({
+          userId: sub.userId,
+          musicEventId: item.id,
+        })),
+        skipDuplicates: true,
       });
       summary.sent++;
     } catch (err) {

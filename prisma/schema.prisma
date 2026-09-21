@@ -37,6 +37,7 @@ model User {
   consents               Consent[]
   newsletterSubscription NewsletterSubscription?
   loginTokens            LoginToken[]
+  sentDigestItems        SentDigestItem[]
 }
 
 /// Single-use magic-link tokens for signing back in with the email a
@@ -118,6 +119,25 @@ model NewsletterSubscription {
   updatedAt  DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// One row per (user, item) once an item has actually gone out in a
+/// scheduled newsletter — lets the next send skip anything already
+/// delivered instead of repeating it every cycle just because it's still
+/// within scoring range. Only the real scheduled send writes here; the
+/// manual "send test email" button and /newsletter-preview intentionally
+/// don't, so testing never eats into a user's own dedup history.
+model SentDigestItem {
+  id           String   @id @default(cuid())
+  userId       String
+  musicEventId String
+  sentAt       DateTime @default(now())
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  musicEvent MusicEvent @relation(fields: [musicEventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, musicEventId])
+  @@index([userId])
 }
 
 // ---------------------------------------------------------------------------
@@ -227,6 +247,8 @@ model MusicEvent {
 
   artist Artist      @relation(fields: [artistId], references: [id], onDelete: Cascade)
   source MusicSource @relation(fields: [sourceId], references: [id])
+
+  sentDigestItems SentDigestItem[]
 
   @@index([type])
   @@index([artistId])
