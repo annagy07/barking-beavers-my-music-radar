@@ -6,16 +6,19 @@ import { fetchArtistAlbums, pickCoverImage } from "@/lib/sources/spotifyReleases
 
 // One-off backfill: createEventIfNew (see lib/sources/shared.ts) only ever
 // creates a MusicEvent, never updates one that already exists — so any
-// "release" row synced before cover art was added to spotifyReleases.ts is
-// permanently stuck with imageUrl null, even though every sync since then
-// has picked it up fine for new releases. This finds those stuck rows,
-// re-fetches each affected artist's recent albums from Spotify (grouped so
-// an artist with several stuck releases only costs one Spotify call, same
-// SPOTIFY_CONCURRENCY-style bounded concurrency the real sync uses to
-// avoid re-tripping the rate limit), and fills in the image by matching
-// title. A release older than Spotify's "last 10" for that artist won't be
-// found and is reported as skipped rather than erroring. Safe to re-run;
-// delete this route once production looks right.
+// "release" row synced before cover art (imageUrl) or the Release Radar
+// playlist feature (externalId, the Spotify album id) was added to
+// spotifyReleases.ts is permanently stuck missing them, even though every
+// sync since has picked both up fine for new releases. Without externalId
+// in particular, the playlist sync has no way to ever find a track for
+// that release. This finds those stuck rows, re-fetches each affected
+// artist's recent albums from Spotify (grouped so an artist with several
+// stuck releases only costs one Spotify call, same SPOTIFY_CONCURRENCY-
+// style bounded concurrency the real sync uses to avoid re-tripping the
+// rate limit), and fills in whichever of the two fields is still missing
+// by matching title. A release older than Spotify's "last 10" for that
+// artist won't be found and is reported as skipped rather than erroring.
+// Safe to re-run; delete this route once production looks right.
 const CONCURRENCY = 3;
 
 export async function POST(request: NextRequest) {
@@ -25,7 +28,7 @@ export async function POST(request: NextRequest) {
   }
 
   const missing = await db.musicEvent.findMany({
-    where: { type: "release", imageUrl: null },
+    where: { type: "release", OR: [{ imageUrl: null }, { externalId: null }] },
     include: { artist: true },
   });
 
@@ -55,12 +58,13 @@ export async function POST(request: NextRequest) {
 
       for (const event of events) {
         const album = albumByTitle.get(event.title);
-        const imageUrl = album ? pickCoverImage(album.images) : undefined;
-        if (!imageUrl) {
+        if (!album) {
           notFound++;
           continue;
         }
-        await db.musicEvent.update({ where: { id: event.id }, data: { imageUrl } });
+        const imageUrl = event.imageUrl ?? pickCoverImage(album.images);
+        const externalId = event.externalId ?? album.id;
+        await db.musicEvent.update({ where: { id: event.id }, data: { imageUrl, externalId } });
         updated++;
       }
     } catch (err) {

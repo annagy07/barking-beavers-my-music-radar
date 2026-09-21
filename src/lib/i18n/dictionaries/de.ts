@@ -284,6 +284,15 @@ export const de: Dictionary = {
     disconnect: "Trennen",
     deleteImportedData: "Importierte Geschmacksdaten löschen",
     connect: "Verbinden",
+    playlistTitle: "Release Radar Playlist",
+    playlistConnect: "Jetzt mit Spotify verbinden, um deine Release Radar Playlist zu erstellen",
+    playlistScopeNote:
+      "Fragt eine zusätzliche Berechtigung an, über den nur lesenden Zugriff oben hinaus: das Erstellen und Befüllen einer einzelnen privaten Playlist.",
+    playlistConnected: "Verbunden",
+    playlistPending: "Eingerichtet, die Playlist erscheint beim nächsten Sync.",
+    playlistOpen: "Playlist auf Spotify öffnen",
+    playlistSuccessBanner: "Deine Release Radar Playlist ist bereit.",
+    playlistErrorBanner: "Playlist konnte nicht eingerichtet werden. Versuch es nochmal oder schau später vorbei.",
     bandsintown: "Bandsintown",
     comingLater: "Kommt später",
     delivery: "Zustellung",
@@ -326,7 +335,7 @@ export const de: Dictionary = {
       },
       {
         title: "Spotify Zugriff",
-        body: "Wir fordern nur lesende Berechtigungen an: user-follow-read, user-top-read und user-library-read. Wir fragen nie deine E Mail Adresse bei Spotify ab, schreiben nie in dein Konto und nutzen nie Spotifys eigene Empfehlungsengine.",
+        body: "Standardmäßig fordern wir nur lesende Berechtigungen an: user-follow-read, user-top-read und user-library-read. Wir fragen nie deine E Mail Adresse bei Spotify ab und nutzen nie Spotifys eigene Empfehlungsengine. Wenn du zusätzlich in den Einstellungen eine Release Radar Playlist erstellst, fragt dieses eine optionale Feature zusätzlich playlist-modify-private an, das erstellt und befüllt ausschließlich diese eine private Playlist, sonst nichts in deinem Konto.",
       },
       {
         title: "Einwilligung",

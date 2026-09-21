@@ -8,10 +8,15 @@ import { SettingsManager } from "@/components/settings/SettingsManager";
 import { getLocale } from "@/lib/i18n/locale";
 import { getDictionary } from "@/lib/i18n";
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ playlist?: string }>;
+}) {
   const user = await getCurrentUser();
   if (!user) redirect("/onboarding");
 
+  const { playlist: playlistStatus } = await searchParams;
   const locale = await getLocale();
   const t = getDictionary(locale);
 
@@ -28,6 +33,11 @@ export default async function SettingsPage() {
     }),
   ]);
 
+  const spotifyConnected = Boolean(spotify && !spotify.disconnectedAt);
+  const playlistScoped = Boolean(
+    spotifyConnected && spotify?.scope?.includes("playlist-modify-private"),
+  );
+
   return (
     <>
       <SiteHeader active="/settings" />
@@ -41,12 +51,15 @@ export default async function SettingsPage() {
           <div className="mt-10">
             <SettingsManager
               email={user.email ?? ""}
-              spotifyConnected={Boolean(spotify && !spotify.disconnectedAt)}
+              spotifyConnected={spotifyConnected}
               spotifyImportedCount={artistCount}
               newsletterStatus={
                 (newsletter?.status as "active" | "paused" | "unsubscribed") ??
                 "active"
               }
+              playlistScoped={playlistScoped}
+              playlistId={spotify?.playlistId ?? null}
+              playlistStatus={playlistStatus === "error" ? "error" : playlistStatus === "connected" ? "connected" : null}
             />
           </div>
         </Container>

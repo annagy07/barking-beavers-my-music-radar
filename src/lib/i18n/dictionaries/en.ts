@@ -285,6 +285,15 @@ export const en = {
     disconnect: "Disconnect",
     deleteImportedData: "Delete imported taste data",
     connect: "Connect",
+    playlistTitle: "Release Radar playlist",
+    playlistConnect: "Connect Spotify to create your Release Radar playlist",
+    playlistScopeNote:
+      "Asks for one extra permission beyond the read-only access above: creating and adding tracks to a single private playlist.",
+    playlistConnected: "Connected",
+    playlistPending: "Set up, the playlist will appear on the next sync.",
+    playlistOpen: "Open playlist on Spotify",
+    playlistSuccessBanner: "Your Release Radar playlist is ready.",
+    playlistErrorBanner: "Couldn't set up the playlist. Try again, or check back later.",
     bandsintown: "Bandsintown",
     comingLater: "Coming later",
     delivery: "Delivery",
@@ -327,7 +336,7 @@ export const en = {
       },
       {
         title: "Spotify access",
-        body: "We request read-only scopes: user-follow-read, user-top-read and user-library-read. We never request your email from Spotify, never write to your account, and never use Spotify's own recommendation engine.",
+        body: "By default we request read-only scopes: user-follow-read, user-top-read and user-library-read. We never request your email from Spotify and never use Spotify's own recommendation engine. If you separately choose to create a Release Radar playlist in Settings, that one optional feature additionally requests playlist-modify-private, which only creates and adds tracks to that single private playlist, nothing else in your account.",
       },
       {
         title: "Consent",

@@ -34,6 +34,7 @@ export interface NewEventInput {
   sourceId: string;
   sourceUrl?: string;
   credibilityScore: number;
+  externalId?: string;
 }
 
 /** Creates a MusicEvent unless one already exists for the same artist +
@@ -64,6 +65,7 @@ export async function createEventIfNew(
       sourceId: input.sourceId,
       sourceUrl: input.sourceUrl,
       credibilityScore: input.credibilityScore,
+      externalId: input.externalId,
     },
   });
   return true;

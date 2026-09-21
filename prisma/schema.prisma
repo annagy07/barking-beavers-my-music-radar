@@ -39,6 +39,7 @@ model User {
   loginTokens            LoginToken[]
   sentDigestItems        SentDigestItem[]
   radarEditions          RadarEdition[]
+  playlistTrackItems     PlaylistTrackItem[]
 }
 
 /// Single-use magic-link tokens for signing back in with the email a
@@ -88,6 +89,11 @@ model ConnectedAccount {
   scope             String?
   connectedAt       DateTime  @default(now())
   disconnectedAt    DateTime?
+  /// Spotify playlist id for this user's auto-maintained "Release Radar"
+  /// playlist — null until the extra playlist-modify-private scope has
+  /// been granted (see /api/spotify/playlist/authorize) and the sync has
+  /// created it. Separate opt-in from the base read-only connection above.
+  playlistId        String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -266,12 +272,37 @@ model MusicEvent {
   sourceUrl        String?
   credibilityScore Int // denormalized snapshot of source credibility at ingest time
   createdAt        DateTime  @default(now())
+  /// Provider-native id of the underlying thing, when there is one worth
+  /// keeping — currently only "release" events set this, to the Spotify
+  /// album/single id, so the Release Radar playlist sync can resolve a
+  /// track for it without an extra artist-level lookup.
+  externalId       String?
 
   artist Artist      @relation(fields: [artistId], references: [id], onDelete: Cascade)
   source MusicSource @relation(fields: [sourceId], references: [id])
 
-  sentDigestItems SentDigestItem[]
+  sentDigestItems    SentDigestItem[]
+  playlistTrackItems PlaylistTrackItem[]
 
   @@index([type])
   @@index([artistId])
+}
+
+/// One row per (user, release event) once a track for it has actually been
+/// added to that user's Release Radar playlist — lets the sync skip
+/// anything already added instead of re-adding it (or re-fetching its
+/// track list) every cycle. Mirrors SentDigestItem's shape/purpose, for the
+/// playlist instead of the email.
+model PlaylistTrackItem {
+  id           String   @id @default(cuid())
+  userId       String
+  musicEventId String
+  trackUri     String // spotify:track:... — kept for reference/debugging
+  addedAt      DateTime @default(now())
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  musicEvent MusicEvent @relation(fields: [musicEventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, musicEventId])
+  @@index([userId])
 }

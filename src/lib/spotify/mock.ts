@@ -81,6 +81,8 @@ const MOCK_LIBRARY: SpotifyImportedArtist[] = [
   },
 ];
 
+let mockPlaylistTracks: string[] = [];
+
 export const mockSpotifyAdapter: SpotifyAdapter = {
   isMock: true,
 
@@ -90,6 +92,10 @@ export const mockSpotifyAdapter: SpotifyAdapter = {
     return "/api/spotify/authorize?mock=1";
   },
 
+  buildPlaylistAuthorizeUrl() {
+    return "/api/spotify/playlist/authorize?mock=1";
+  },
+
   async exchangeCode() {
     return {
       accessToken: `mock-access-${Date.now()}`,
@@ -97,6 +103,37 @@ export const mockSpotifyAdapter: SpotifyAdapter = {
       expiresIn: 3600,
       scope: "user-follow-read user-top-read user-library-read",
     };
+  },
+
+  async exchangePlaylistCode() {
+    return {
+      accessToken: `mock-access-${Date.now()}`,
+      refreshToken: `mock-refresh-${Date.now()}`,
+      expiresIn: 3600,
+      scope: "user-follow-read user-top-read user-library-read playlist-modify-private",
+    };
+  },
+
+  async refreshAccessToken(refreshToken) {
+    return {
+      accessToken: `mock-access-${Date.now()}`,
+      refreshToken,
+      expiresIn: 3600,
+      scope: "user-follow-read user-top-read user-library-read playlist-modify-private",
+    };
+  },
+
+  async getSpotifyUserId() {
+    return "mock-spotify-user";
+  },
+
+  async createPlaylist() {
+    mockPlaylistTracks = [];
+    return { id: `mock-playlist-${Date.now()}` };
+  },
+
+  async addTracksToPlaylist({ trackUris }) {
+    mockPlaylistTracks.push(...trackUris);
   },
 
   async fetchImportedArtists() {

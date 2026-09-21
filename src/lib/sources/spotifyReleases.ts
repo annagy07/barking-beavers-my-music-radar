@@ -92,6 +92,7 @@ export async function syncSpotifyReleasesForArtist(
       sourceId: source.id,
       sourceUrl: album.external_urls?.spotify,
       credibilityScore: source.credibilityScore,
+      externalId: album.id,
     });
     if (created) result.created++;
   }

@@ -21,14 +21,21 @@ export function SettingsManager({
   spotifyConnected,
   spotifyImportedCount,
   newsletterStatus,
+  playlistScoped,
+  playlistId,
+  playlistStatus,
 }: {
   email: string;
   spotifyConnected: boolean;
   spotifyImportedCount: number;
   newsletterStatus: "active" | "paused" | "unsubscribed";
+  playlistScoped: boolean;
+  playlistId: string | null;
+  playlistStatus: "connected" | "error" | null;
 }) {
   const { t } = useLocale();
   const [connected, setConnected] = useState(spotifyConnected);
+  const [hasPlaylistScope, setHasPlaylistScope] = useState(playlistScoped);
   const [importedCount, setImportedCount] = useState(spotifyImportedCount);
   const [status, setStatus] = useState(newsletterStatus);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -82,6 +89,7 @@ export function SettingsManager({
                   startTransition(async () => {
                     await disconnectSpotify();
                     setConnected(false);
+                    setHasPlaylistScope(false);
                   })
                 }
                 className="border border-ink px-3 py-1.5 text-xs hover:bg-ink hover:text-paper"
@@ -114,6 +122,47 @@ export function SettingsManager({
             )}
           </div>
         </Card>
+
+        <Card className="mt-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-medium">{t.settings.playlistTitle}</p>
+              <p className="text-xs text-ink-soft">
+                {hasPlaylistScope
+                  ? playlistId
+                    ? t.settings.playlistConnected
+                    : t.settings.playlistPending
+                  : t.settings.playlistScopeNote}
+              </p>
+            </div>
+            {hasPlaylistScope ? (
+              playlistId && (
+                <a
+                  href={`https://open.spotify.com/playlist/${playlistId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="shrink-0 border border-ink px-3 py-1.5 text-xs hover:bg-ink hover:text-paper"
+                >
+                  {t.settings.playlistOpen}
+                </a>
+              )
+            ) : (
+              <a
+                href="/api/spotify/playlist/authorize"
+                className="shrink-0 border border-ink px-3 py-1.5 text-xs hover:bg-ink hover:text-paper"
+              >
+                {t.settings.playlistConnect}
+              </a>
+            )}
+          </div>
+          {playlistStatus === "connected" && (
+            <p className="mt-3 text-xs text-positive">{t.settings.playlistSuccessBanner}</p>
+          )}
+          {playlistStatus === "error" && (
+            <p className="mt-3 text-xs text-accent">{t.settings.playlistErrorBanner}</p>
+          )}
+        </Card>
+
         <Card className="mt-3 flex items-center justify-between opacity-60">
           <div>
             <p className="font-medium">{t.settings.bandsintown}</p>

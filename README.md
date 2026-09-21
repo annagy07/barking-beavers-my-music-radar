@@ -126,6 +126,17 @@ npx eslint .       # lint
   videos and blog coverage for artists people actually follow, pulled from
   Spotify, Ticketmaster, YouTube and music-blog RSS feeds on a daily
   Vercel Cron, on top of the seeded catalog.
+- **Radar library** (`/library`) — every past scheduled-send radar,
+  browsable; `/radar` itself mirrors the latest one rather than
+  recomputing live, so the site never drifts from what actually landed in
+  the inbox (see `RadarEdition` / `src/lib/radar/editions.ts`).
+- **Release Radar playlist** (optional, separate opt-in — see below) — an
+  auto-maintained private Spotify playlist of new releases from the
+  artists on your radar.
+- **English/German toggle** — a cookie-backed locale switch
+  (`src/lib/i18n/`) covering every page's UI copy; the underlying content
+  (release titles, "why this is here" reasons, the emails) stays English,
+  sourced in English regardless of locale.
 
 ## What's mocked
 
@@ -148,6 +159,9 @@ npx eslint .       # lint
 2. Add `http://localhost:3000/api/spotify/callback` as a Redirect URI.
 3. Set `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REDIRECT_URI`
    in `.env`.
+4. For the optional Release Radar playlist feature (see below), also add
+   `http://localhost:3000/api/spotify/playlist/callback` as a second
+   Redirect URI on the same app, and set `SPOTIFY_PLAYLIST_REDIRECT_URI`.
 
 ## Live content sync (real releases, concerts, videos, blog news)
 
@@ -237,6 +251,45 @@ that artist/type/title) and never touch any User-related table.
    scale; prefer the per-source routes above.
 
 No other code changes needed — the adapter switches automatically.
+
+## Release Radar playlist (auto-updated Spotify playlist)
+
+Separate, explicit opt-in from Settings — not part of onboarding's
+read-only Spotify connect. `src/lib/sources/playlistSync.ts` maintains one
+private Spotify playlist per user containing new releases from the
+artists on their radar.
+
+- **Connecting**: the "Connect Spotify to create your Release Radar
+  playlist" button in Settings goes through its own OAuth flow
+  (`/api/spotify/playlist/authorize` → `/api/spotify/playlist/callback`,
+  own PKCE cookie, own redirect URI — see "To use real Spotify" above),
+  requesting the base read scopes again plus one new write scope,
+  `playlist-modify-private`. This is additive, not a replacement: a user
+  who already connected Spotify for taste import during onboarding still
+  needs to click this once to grant the extra scope: a previously-issued
+  token can't retroactively gain it. The callback creates the playlist
+  and runs a first sync immediately, rather than waiting for tomorrow's
+  cron, so it's not empty when the user lands back on Settings.
+- **Syncing**: `/api/cron/sync-playlist` (daily, 06:40 UTC in
+  `vercel.json`, after the content syncs) finds every "release" MusicEvent
+  matching the user's followed artists and enabled categories
+  (`new_singles`/`albums_eps`, via the same `buildCategoryMatcher` the
+  radar uses) that hasn't been added yet (`PlaylistTrackItem`, mirrors how
+  `SentDigestItem` dedups the newsletter), resolves one track per release
+  (the album's first track — Spotify's public catalog API, no extra user
+  scope needed for that read), and adds them. The very first sync and
+  every sync after it are the same code path: whatever's new gets added,
+  whether that's "everything currently on the radar" (first run) or "the
+  one single that came out today" (every run after).
+- Access tokens last about an hour; `getFreshAccessToken` in
+  `playlistSync.ts` always refreshes from the stored refresh token before
+  use rather than tracking exact expiry, since the daily cron cadence
+  means a stored token is essentially always stale by sync time anyway.
+- Needs `MusicEvent.externalId` (the Spotify album/single id) set on a
+  release to find a track for it — populated automatically by
+  `spotifyReleases.ts` going forward; older rows synced before this
+  feature existed are covered by the same `backfill-release-artwork`
+  admin route the missing-cover-art fix uses (it backfills both fields).
 
 ## Sending the newsletter for real
 
