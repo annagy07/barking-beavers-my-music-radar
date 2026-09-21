@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
   CITIES,
   CONCERT_LOOKAHEAD_DAYS,
@@ -16,7 +16,7 @@ import { useLocale } from "@/components/i18n/LocaleProvider";
 interface PreferencesData {
   contentCategories: ContentCategoryId[];
   discoveryLevel: number;
-  city: string;
+  cities: string[];
   concertRadiusKm: number;
   concertLookaheadDays: number;
   newsletterFrequency: NewsletterFrequencyId;
@@ -28,7 +28,7 @@ export function PreferencesManager({ initial }: { initial: PreferencesData }) {
   const [data, setData] = useState(initial);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [, startTransition] = useTransition();
-  const cityDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [customCity, setCustomCity] = useState("");
 
   function save(patch: PreferencePatch) {
     startTransition(async () => {
@@ -44,6 +44,21 @@ export function PreferencesManager({ initial }: { initial: PreferencesData }) {
     if (next.length === 0) return; // must keep at least one
     setData((d) => ({ ...d, contentCategories: next }));
     save({ contentCategories: next });
+  }
+
+  function toggleCity(city: string) {
+    const next = data.cities.includes(city)
+      ? data.cities.filter((c) => c !== city)
+      : [...data.cities, city];
+    setData((d) => ({ ...d, cities: next }));
+    save({ cities: next });
+  }
+
+  function addCustomCity() {
+    const trimmed = customCity.trim();
+    setCustomCity("");
+    if (!trimmed || data.cities.includes(trimmed)) return;
+    toggleCity(trimmed);
   }
 
   useEffect(() => {
@@ -103,22 +118,73 @@ export function PreferencesManager({ initial }: { initial: PreferencesData }) {
           <label className="font-mono text-xs uppercase tracking-wide text-ink-soft">
             {t.preferences.cityLabel}
           </label>
-          <input
-            list="pref-city-options"
-            defaultValue={data.city}
-            onChange={(e) => {
-              const city = e.target.value;
-              setData((d) => ({ ...d, city }));
-              if (cityDebounce.current) clearTimeout(cityDebounce.current);
-              cityDebounce.current = setTimeout(() => save({ city }), 500);
-            }}
-            className="mt-2 w-full border border-ink bg-paper px-4 py-2.5 text-sm outline-none focus:border-accent"
-          />
+          <div className="mt-2 flex flex-wrap gap-2">
+            {CITIES.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => toggleCity(c)}
+                className={
+                  "border px-3 py-1.5 text-sm " +
+                  (data.cities.includes(c)
+                    ? "border-ink bg-ink text-paper"
+                    : "border-line hover:border-ink")
+                }
+              >
+                {t.cities[c] ?? c}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-3 flex gap-2">
+            <input
+              list="pref-city-options"
+              value={customCity}
+              onChange={(e) => setCustomCity(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addCustomCity();
+                }
+              }}
+              className="w-full border border-ink bg-paper px-4 py-2.5 text-sm outline-none focus:border-accent"
+            />
+            <button
+              type="button"
+              onClick={addCustomCity}
+              className="shrink-0 border border-ink px-3 py-1.5 text-sm hover:bg-ink hover:text-paper"
+            >
+              {t.onboarding.concerts.addCity}
+            </button>
+          </div>
           <datalist id="pref-city-options">
             {CITIES.map((c) => (
               <option key={c} value={c} />
             ))}
           </datalist>
+
+          {data.cities.filter((c) => !(CITIES as readonly string[]).includes(c)).length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {data.cities
+                .filter((c) => !(CITIES as readonly string[]).includes(c))
+                .map((c) => (
+                  <span
+                    key={c}
+                    className="inline-flex items-center gap-2 border border-ink bg-ink px-3 py-1 text-xs text-paper"
+                  >
+                    {c}
+                    <button
+                      type="button"
+                      onClick={() => toggleCity(c)}
+                      aria-label={t.onboarding.concerts.removeCity(c)}
+                      className="hover:text-accent"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+            </div>
+          )}
         </div>
 
         <div className="mt-4">

@@ -37,6 +37,7 @@ export default async function RadarPage() {
     dateStyle: "long",
     timeStyle: "short",
   });
+  const preferenceCities = preference ? (JSON.parse(preference.cities) as string[]) : [];
 
   return (
     <>
@@ -49,7 +50,10 @@ export default async function RadarPage() {
           </h1>
           <p className="mt-3 text-sm text-ink-soft">
             {t.radar.generated(generated)} · {t.radar.tracking(artistCount)}
-            {preference?.city ? ` · ${t.cities[preference.city] ?? preference.city}` : ""} ·{" "}
+            {preferenceCities.length > 0
+              ? ` · ${preferenceCities.map((c) => t.cities[c] ?? c).join(", ")}`
+              : ""}{" "}
+            ·{" "}
             <Link href="/newsletter-preview" className="underline hover:text-accent">
               {t.radar.seeAsEmail}
             </Link>

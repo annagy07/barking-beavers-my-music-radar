@@ -1,26 +1,39 @@
 "use client";
 
+import { useState } from "react";
 import { Eyebrow } from "@/components/ui/Container";
 import { CITIES, CONCERT_LOOKAHEAD_DAYS, CONCERT_RADII } from "@/lib/constants";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 
 export function StepConcerts({
-  city,
+  cities,
   concertRadiusKm,
   concertLookaheadDays,
-  onCity,
+  onToggleCity,
   onRadius,
   onLookahead,
 }: {
-  city: string;
+  cities: string[];
   concertRadiusKm: number;
   concertLookaheadDays: number;
-  onCity: (city: string) => void;
+  onToggleCity: (city: string) => void;
   onRadius: (km: number) => void;
   onLookahead: (days: number) => void;
 }) {
   const { t } = useLocale();
   const s = t.onboarding.concerts;
+  const [customCity, setCustomCity] = useState("");
+  const customCities = cities.filter((c) => !(CITIES as readonly string[]).includes(c));
+
+  function addCustomCity() {
+    const trimmed = customCity.trim();
+    if (!trimmed || cities.includes(trimmed)) {
+      setCustomCity("");
+      return;
+    }
+    onToggleCity(trimmed);
+    setCustomCity("");
+  }
 
   return (
     <div>
@@ -34,27 +47,15 @@ export function StepConcerts({
         <label className="font-mono text-xs uppercase tracking-wide text-ink-soft">
           {s.cityLabel}
         </label>
-        <input
-          list="city-options"
-          value={city}
-          onChange={(e) => onCity(e.target.value)}
-          placeholder={s.cityPlaceholder}
-          className="mt-2 w-full border border-ink bg-paper px-4 py-3 text-base outline-none focus:border-accent"
-        />
-        <datalist id="city-options">
-          {CITIES.map((c) => (
-            <option key={c} value={c} />
-          ))}
-        </datalist>
         <div className="mt-2 flex flex-wrap gap-2">
           {CITIES.map((c) => (
             <button
               key={c}
               type="button"
-              onClick={() => onCity(c)}
+              onClick={() => onToggleCity(c)}
               className={
                 "border px-3 py-1 text-xs " +
-                (city === c
+                (cities.includes(c)
                   ? "border-ink bg-ink text-paper"
                   : "border-line text-ink-soft hover:border-ink")
               }
@@ -63,6 +64,55 @@ export function StepConcerts({
             </button>
           ))}
         </div>
+
+        <div className="mt-3 flex gap-2">
+          <input
+            list="city-options"
+            value={customCity}
+            onChange={(e) => setCustomCity(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addCustomCity();
+              }
+            }}
+            placeholder={s.cityPlaceholder}
+            className="w-full border border-ink bg-paper px-4 py-3 text-base outline-none focus:border-accent"
+          />
+          <button
+            type="button"
+            onClick={addCustomCity}
+            className="shrink-0 border border-ink px-4 py-3 text-sm hover:bg-ink hover:text-paper"
+          >
+            {s.addCity}
+          </button>
+        </div>
+        <datalist id="city-options">
+          {CITIES.map((c) => (
+            <option key={c} value={c} />
+          ))}
+        </datalist>
+
+        {customCities.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {customCities.map((c) => (
+              <span
+                key={c}
+                className="inline-flex items-center gap-2 border border-ink bg-ink px-3 py-1 text-xs text-paper"
+              >
+                {c}
+                <button
+                  type="button"
+                  onClick={() => onToggleCity(c)}
+                  aria-label={s.removeCity(c)}
+                  className="hover:text-accent"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="mt-8">

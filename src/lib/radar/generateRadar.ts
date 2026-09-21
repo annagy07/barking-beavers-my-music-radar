@@ -39,10 +39,26 @@ function parseGenres(json: string): string[] {
 export interface RadarPreferenceInput {
   contentCategories: ContentCategoryId[];
   discoveryLevel: number;
-  city: string | null;
+  cities: string[];
   concertRadiusKm: number;
   concertLookaheadDays: number;
   instantPresaleAlerts: boolean;
+}
+
+/** The closest of the user's chosen cities to a concert's venue city, or
+ * null if none of them have a known distance to it (see getDistanceKm) —
+ * treated the same as "out of range" rather than guessed at. */
+function nearestCity(
+  cities: string[],
+  eventCity: string,
+): { city: string; distanceKm: number } | null {
+  let best: { city: string; distanceKm: number } | null = null;
+  for (const city of cities) {
+    const distanceKm = getDistanceKm(city, eventCity);
+    if (distanceKm === null) continue;
+    if (!best || distanceKm < best.distanceKm) best = { city, distanceKm };
+  }
+  return best;
 }
 
 export interface RadarArtistEntryInput {
@@ -168,10 +184,12 @@ async function buildRadar(
     const categoryId = matchCategory(event.type, event.subtype);
     if (!categoryId) continue; // content type disabled by the user
 
+    let nearestConcertCity: string | null = null;
     if (event.type === "concert") {
-      if (!preference.city || !event.city) continue;
-      const distance = getDistanceKm(preference.city, event.city);
-      if (distance === null || distance > preference.concertRadiusKm) continue;
+      if (preference.cities.length === 0 || !event.city) continue;
+      const nearest = nearestCity(preference.cities, event.city);
+      if (!nearest || nearest.distanceKm > preference.concertRadiusKm) continue;
+      nearestConcertCity = nearest.city;
     }
 
     if (LOOKAHEAD_RELEVANT_TYPES.has(event.type) && event.eventDate) {
@@ -189,7 +207,7 @@ async function buildRadar(
     if (event.type === "concert") {
       score += SCORE_CONCERT_IN_RADIUS;
       reasons.push(
-        `You follow ${event.artist.name} and asked for concerts within ${preference.concertRadiusKm} km of ${preference.city}.`,
+        `You follow ${event.artist.name} and asked for concerts within ${preference.concertRadiusKm} km of ${nearestConcertCity}.`,
       );
     }
 
@@ -234,7 +252,7 @@ async function buildRadar(
   return {
     generatedAt: now.toISOString(),
     userId: ownerId,
-    city: preference.city,
+    cities: preference.cities,
     concertRadiusKm: preference.concertRadiusKm,
     items: capped,
     sections,
@@ -259,7 +277,7 @@ export async function generatePersonalizedRadar(
     return {
       generatedAt: new Date().toISOString(),
       userId,
-      city: null,
+      cities: [],
       concertRadiusKm: 50,
       items: [],
       sections: emptySections(),
@@ -271,7 +289,7 @@ export async function generatePersonalizedRadar(
     {
       contentCategories: JSON.parse(preference.contentCategories) as ContentCategoryId[],
       discoveryLevel: preference.discoveryLevel,
-      city: preference.city,
+      cities: JSON.parse(preference.cities) as string[],
       concertRadiusKm: preference.concertRadiusKm,
       concertLookaheadDays: preference.concertLookaheadDays,
       instantPresaleAlerts: preference.instantPresaleAlerts,
@@ -289,7 +307,7 @@ export interface DraftRadarInput {
   artists: { artistId: string; relevance: RelevanceId }[];
   contentCategories: ContentCategoryId[];
   discoveryLevel: number;
-  city: string;
+  cities: string[];
   concertRadiusKm: number;
   concertLookaheadDays: number;
   instantPresaleAlerts: boolean;
@@ -321,7 +339,7 @@ export async function generateDraftRadar(
     {
       contentCategories: draft.contentCategories,
       discoveryLevel: draft.discoveryLevel,
-      city: draft.city || null,
+      cities: draft.cities,
       concertRadiusKm: draft.concertRadiusKm,
       concertLookaheadDays: draft.concertLookaheadDays,
       instantPresaleAlerts: draft.instantPresaleAlerts,

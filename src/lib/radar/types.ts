@@ -35,7 +35,7 @@ export interface RadarSections {
 export interface RadarResult {
   generatedAt: string;
   userId: string;
-  city: string | null;
+  cities: string[];
   concertRadiusKm: number;
   items: RadarItem[];
   sections: RadarSections;

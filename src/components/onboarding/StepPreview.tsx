@@ -35,7 +35,7 @@ export function StepPreview({
           .map((a) => ({ artistId: a.artistId, relevance: a.relevance })),
         contentCategories: state.contentCategories,
         discoveryLevel: state.discoveryLevel,
-        city: state.city,
+        cities: state.cities,
         concertRadiusKm: state.concertRadiusKm,
         concertLookaheadDays: state.concertLookaheadDays,
         instantPresaleAlerts: state.instantPresaleAlerts,

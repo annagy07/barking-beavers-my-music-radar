@@ -73,7 +73,7 @@ export async function submitOnboarding(
       userId: user.id,
       contentCategories: JSON.stringify(data.contentCategories),
       discoveryLevel: data.discoveryLevel,
-      city: data.city,
+      cities: JSON.stringify(data.cities),
       concertRadiusKm: data.concertRadiusKm,
       concertLookaheadDays: data.concertLookaheadDays,
       newsletterFrequency: data.newsletterFrequency,
@@ -82,7 +82,7 @@ export async function submitOnboarding(
     update: {
       contentCategories: JSON.stringify(data.contentCategories),
       discoveryLevel: data.discoveryLevel,
-      city: data.city,
+      cities: JSON.stringify(data.cities),
       concertRadiusKm: data.concertRadiusKm,
       concertLookaheadDays: data.concertLookaheadDays,
       newsletterFrequency: data.newsletterFrequency,

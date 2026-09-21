@@ -39,7 +39,7 @@ export default async function PreferencesPage() {
                   preference.contentCategories,
                 ) as ContentCategoryId[],
                 discoveryLevel: preference.discoveryLevel,
-                city: preference.city ?? "",
+                cities: JSON.parse(preference.cities) as string[],
                 concertRadiusKm: preference.concertRadiusKm,
                 concertLookaheadDays: preference.concertLookaheadDays,
                 newsletterFrequency:

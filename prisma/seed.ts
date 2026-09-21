@@ -90,7 +90,7 @@ async function main() {
         "new_artists",
       ]),
       discoveryLevel: 4,
-      city: "Berlin",
+      cities: JSON.stringify(["Berlin", "Hamburg"]),
       concertRadiusKm: 100,
       concertLookaheadDays: 90,
       newsletterFrequency: "weekly",

@@ -28,7 +28,7 @@ export interface WizardState {
   artists: WizardArtist[];
   contentCategories: ContentCategoryId[];
   discoveryLevel: number;
-  city: string;
+  cities: string[];
   concertRadiusKm: (typeof CONCERT_RADII)[number];
   concertLookaheadDays: (typeof CONCERT_LOOKAHEAD_DAYS)[number];
   newsletterFrequency: NewsletterFrequencyId;
@@ -57,7 +57,7 @@ export const initialWizardState: WizardState = {
   artists: [],
   contentCategories: [...DEFAULT_CONTENT_CATEGORIES],
   discoveryLevel: 3,
-  city: "",
+  cities: [],
   concertRadiusKm: 50,
   concertLookaheadDays: 90,
   newsletterFrequency: "weekly",

@@ -75,7 +75,7 @@ export async function buildNewsletterEmail(
   const html = renderNewsletterHtml(radar, {
     email,
     frequencyLabel,
-    city: preference?.city ?? null,
+    cities: preference ? (JSON.parse(preference.cities) as string[]) : [],
     // Absolute, not relative — a relative href in an email has no page to
     // resolve against, so mail clients guess at a host instead of just
     // failing (see the /login link bug this fixed: a bare path turned

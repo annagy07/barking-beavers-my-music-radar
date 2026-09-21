@@ -231,7 +231,7 @@ model UserPreference {
   userId               String   @unique
   contentCategories    String // JSON array string, e.g. ["new_singles","concerts"]
   discoveryLevel       Int      @default(3) // 1 (only known artists) .. 5 (surprise me)
-  city                 String?
+  cities               String   @default("[]") // JSON array string, e.g. ["Berlin","Hamburg"]
   concertRadiusKm      Int      @default(50)
   concertLookaheadDays Int      @default(90)
   newsletterFrequency  String   @default("weekly") // "weekly" | "twice_weekly" | "daily"

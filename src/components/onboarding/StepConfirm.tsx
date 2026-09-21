@@ -80,8 +80,12 @@ export function StepConfirm({
         <Row
           label={s.concerts}
           value={
-            state.city
-              ? s.concertsValue(state.concertRadiusKm, state.city, state.concertLookaheadDays)
+            state.cities.length > 0
+              ? s.concertsValue(
+                  state.concertRadiusKm,
+                  state.cities.map((c) => t.cities[c] ?? c).join(", "),
+                  state.concertLookaheadDays,
+                )
               : s.noCity
           }
           editLabel={s.edit}

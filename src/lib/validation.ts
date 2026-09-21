@@ -29,7 +29,7 @@ export const onboardingSubmitSchema = z.object({
     .array(z.enum(contentCategoryIds))
     .min(1, "Choose at least one category"),
   discoveryLevel: z.number().int().min(1).max(5),
-  city: z.string().trim().min(1, "City is required"),
+  cities: z.array(z.string().trim().min(1)).min(1, "Choose at least one city"),
   concertRadiusKm: z.number().refine((v) => (CONCERT_RADII as readonly number[]).includes(v)),
   concertLookaheadDays: z
     .number()
@@ -50,7 +50,7 @@ export const draftRadarSchema = z.object({
     .min(1),
   contentCategories: z.array(z.enum(contentCategoryIds)),
   discoveryLevel: z.number().int().min(1).max(5),
-  city: z.string().trim(),
+  cities: z.array(z.string().trim()),
   concertRadiusKm: z.number(),
   concertLookaheadDays: z.number(),
   instantPresaleAlerts: z.boolean(),

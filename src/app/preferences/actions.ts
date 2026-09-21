@@ -13,7 +13,7 @@ import {
 const patchSchema = z.object({
   contentCategories: z.array(z.string()).optional(),
   discoveryLevel: z.number().int().min(1).max(5).optional(),
-  city: z.string().trim().optional(),
+  cities: z.array(z.string().trim()).optional(),
   concertRadiusKm: z
     .number()
     .refine((v) => (CONCERT_RADII as readonly number[]).includes(v))
@@ -29,7 +29,7 @@ const patchSchema = z.object({
 export type PreferencePatch = {
   contentCategories?: ContentCategoryId[];
   discoveryLevel?: number;
-  city?: string;
+  cities?: string[];
   concertRadiusKm?: number;
   concertLookaheadDays?: number;
   newsletterFrequency?: "weekly" | "twice_weekly" | "daily";
@@ -48,6 +48,7 @@ export async function updatePreferences(patch: PreferencePatch) {
       contentCategories: data.contentCategories
         ? JSON.stringify(data.contentCategories)
         : undefined,
+      cities: data.cities ? JSON.stringify(data.cities) : undefined,
     },
   });
 

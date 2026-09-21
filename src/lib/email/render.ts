@@ -108,7 +108,7 @@ function renderSection(heading: string, items: RadarItem[]) {
 export interface NewsletterMeta {
   email: string;
   frequencyLabel: string;
-  city: string | null;
+  cities: string[];
   unsubscribeUrl: string;
   preferencesUrl: string;
   privacyUrl: string;
@@ -157,7 +157,7 @@ export function renderNewsletterHtml(radar: RadarResult, meta: NewsletterMeta) {
             </tr>
             <tr>
               <td style="padding:18px 0 4px 0;font-size:14px;color:${INK_SOFT};">
-                ${meta.city ? `Tracking your artists and shows within reach of ${escapeHtml(meta.city)}.` : "Tracking the artists and categories you chose."}
+                ${meta.cities.length > 0 ? `Tracking your artists and shows within reach of ${escapeHtml(meta.cities.join(", "))}.` : "Tracking the artists and categories you chose."}
                 No feed, no black-box algorithm — every item below says exactly why it's here.
               </td>
             </tr>

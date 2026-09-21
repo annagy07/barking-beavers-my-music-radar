@@ -183,6 +183,15 @@ export function OnboardingWizard() {
     }));
   }, []);
 
+  const toggleCity = useCallback((city: string) => {
+    setState((prev) => ({
+      ...prev,
+      cities: prev.cities.includes(city)
+        ? prev.cities.filter((c) => c !== city)
+        : [...prev.cities, city],
+    }));
+  }, []);
+
   const activeArtistCount = state.artists.filter((a) => !a.blocked).length;
 
   const canContinue = useMemo(() => {
@@ -194,13 +203,13 @@ export function OnboardingWizard() {
       case "preferences":
         return state.contentCategories.length >= 1;
       case "concerts":
-        return state.city.trim().length > 0;
+        return state.cities.length > 0;
       case "email":
         return /.+@.+\..+/.test(state.email) && state.consent;
       default:
         return true;
     }
-  }, [step, activeArtistCount, state.contentCategories, state.city, state.email, state.consent]);
+  }, [step, activeArtistCount, state.contentCategories, state.cities, state.email, state.consent]);
 
   const stepIndex = STEPS.indexOf(step);
 
@@ -228,7 +237,7 @@ export function OnboardingWizard() {
           })),
         contentCategories: state.contentCategories,
         discoveryLevel: state.discoveryLevel,
-        city: state.city,
+        cities: state.cities,
         concertRadiusKm: state.concertRadiusKm,
         concertLookaheadDays: state.concertLookaheadDays,
         newsletterFrequency: state.newsletterFrequency,
@@ -292,10 +301,10 @@ export function OnboardingWizard() {
 
       {step === "concerts" && (
         <StepConcerts
-          city={state.city}
+          cities={state.cities}
           concertRadiusKm={state.concertRadiusKm}
           concertLookaheadDays={state.concertLookaheadDays}
-          onCity={(city) => update({ city })}
+          onToggleCity={toggleCity}
           onRadius={(concertRadiusKm) =>
             update({ concertRadiusKm: concertRadiusKm as WizardState["concertRadiusKm"] })
           }
