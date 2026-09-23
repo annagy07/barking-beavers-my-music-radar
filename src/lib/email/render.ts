@@ -47,7 +47,11 @@ function renderItem(item: RadarItem) {
                 ${escapeHtml(item.artistName)}
               </div>
               <div style="font-family:${DISPLAY_FONT};font-size:19px;line-height:1.2;color:${INK};font-weight:700;margin-bottom:4px;">
-                ${escapeHtml(decodeHtmlEntities(item.title))}
+                ${
+                  item.sourceUrl
+                    ? `<a href="${escapeHtml(item.sourceUrl)}" style="color:${INK};text-decoration:none;">${escapeHtml(decodeHtmlEntities(item.title))}</a>`
+                    : escapeHtml(decodeHtmlEntities(item.title))
+                }
               </div>
               ${meta ? `<div style="font-size:13px;color:${INK_SOFT};margin-bottom:6px;">${escapeHtml(meta)}</div>` : ""}
               <div style="font-size:14px;line-height:1.5;color:${INK};margin-bottom:8px;">

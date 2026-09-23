@@ -41,7 +41,18 @@ export function RadarItemCard({ item }: { item: RadarItem }) {
           {item.artistName}
         </p>
         <h3 className="mt-1 font-display text-lg font-semibold leading-snug">
-          {decodeHtmlEntities(item.title)}
+          {item.sourceUrl ? (
+            <a
+              href={item.sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="underline decoration-transparent underline-offset-2 transition-colors hover:decoration-current"
+            >
+              {decodeHtmlEntities(item.title)}
+            </a>
+          ) : (
+            decodeHtmlEntities(item.title)
+          )}
         </h3>
         {meta && <p className="mt-1 text-xs text-ink-soft">{meta}</p>}
         <p className="mt-2 text-sm leading-relaxed text-ink-soft">
