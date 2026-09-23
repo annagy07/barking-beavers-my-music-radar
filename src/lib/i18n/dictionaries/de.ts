@@ -391,8 +391,8 @@ export const de: Dictionary = {
   },
   frequency: {
     weekly: { label: "Wöchentlich", description: "Ein Digest, jede Woche." },
-    twice_weekly: { label: "Zweimal pro Woche", description: "Montag und Donnerstag." },
-    daily: { label: "Täglich", description: "Für die Komplettisten." },
+    biweekly: { label: "Alle zwei Wochen", description: "Ein Digest, alle zwei Wochen." },
+    monthly: { label: "Monatlich", description: "Ein Digest, einmal im Monat." },
   },
   discoveryLevels: {
     1: "Nur Artists, die ich schon kenne",

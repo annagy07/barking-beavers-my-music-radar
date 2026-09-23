@@ -22,7 +22,7 @@ const patchSchema = z.object({
     .number()
     .refine((v) => (CONCERT_LOOKAHEAD_DAYS as readonly number[]).includes(v))
     .optional(),
-  newsletterFrequency: z.enum(["weekly", "twice_weekly", "daily"]).optional(),
+  newsletterFrequency: z.enum(["weekly", "biweekly", "monthly"]).optional(),
   instantPresaleAlerts: z.boolean().optional(),
 });
 
@@ -32,7 +32,7 @@ export type PreferencePatch = {
   cities?: string[];
   concertRadiusKm?: number;
   concertLookaheadDays?: number;
-  newsletterFrequency?: "weekly" | "twice_weekly" | "daily";
+  newsletterFrequency?: "weekly" | "biweekly" | "monthly";
   instantPresaleAlerts?: boolean;
 };
 

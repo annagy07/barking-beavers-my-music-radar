@@ -150,6 +150,10 @@ export function emptyResult(): SyncResult {
   return { created: 0, errors: [] };
 }
 
+export function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 /** Runs `fn` over `items` with at most `concurrency` in flight at once.
  * Used to keep syncAllContent within Vercel's function time limit — three
  * sequential external API calls per artist doesn't scale to hundreds of

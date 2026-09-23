@@ -8,29 +8,27 @@ import { getAppOrigin } from "@/lib/appUrl";
 import { renderNewsletterHtml } from "./render";
 import { emailProvider } from "./provider";
 
-// Which UTC weekdays (0=Sun..6=Sat) each frequency is due on. Deterministic
-// and explicit, same spirit as the rest of the app's scoring rules — no
-// per-user custom day, just a fixed, visible schedule matching the labels
-// in constants.ts ("twice_weekly" = "Monday and Thursday").
-const FREQUENCY_DAYS: Record<string, number[]> = {
-  daily: [0, 1, 2, 3, 4, 5, 6],
-  weekly: [1], // Monday
-  twice_weekly: [1, 4], // Monday, Thursday
+// Every frequency fires only on Monday — deterministic and explicit, same
+// spirit as the rest of the app's scoring rules, no per-user custom day.
+// Weekly needs nothing beyond "it's Monday": since this only ever runs on
+// Mondays, the previous send was necessarily ~7 days ago already.
+// Biweekly/monthly additionally require enough elapsed time since the last
+// real send, so they skip every other (or every third) Monday instead of
+// firing every week — thresholds sit just under the exact day count as a
+// buffer against cron timing jitter, never enough to let a cycle fire early.
+const MIN_DAYS_SINCE_LAST_SEND: Record<string, number> = {
+  weekly: 6,
+  biweekly: 13,
+  monthly: 27,
 };
 
-function isSameUtcDay(a: Date, b: Date): boolean {
-  return (
-    a.getUTCFullYear() === b.getUTCFullYear() &&
-    a.getUTCMonth() === b.getUTCMonth() &&
-    a.getUTCDate() === b.getUTCDate()
-  );
-}
-
 export function isDueToday(frequency: string, lastSentAt: Date | null, now: Date): boolean {
-  const days = FREQUENCY_DAYS[frequency] ?? FREQUENCY_DAYS.weekly;
-  if (!days.includes(now.getUTCDay())) return false;
-  if (lastSentAt && isSameUtcDay(lastSentAt, now)) return false;
-  return true;
+  if (now.getUTCDay() !== 1) return false; // Monday only, every frequency
+  if (!lastSentAt) return true;
+
+  const daysSinceLastSend = (now.getTime() - lastSentAt.getTime()) / (1000 * 60 * 60 * 24);
+  const minDays = MIN_DAYS_SINCE_LAST_SEND[frequency] ?? MIN_DAYS_SINCE_LAST_SEND.weekly;
+  return daysSinceLastSend >= minDays;
 }
 
 /** Drops anything already delivered in a previous scheduled send (see
@@ -98,7 +96,7 @@ export interface SendScheduledSummary {
 
 /**
  * Sends the digest to every active subscriber whose chosen frequency
- * (weekly/twice_weekly/daily) makes them due today, based on lastSentAt.
+ * (weekly/biweekly/monthly) makes them due today, based on lastSentAt.
  * Meant to be called once a day (see /api/cron/send-newsletters) — calling
  * it more than once on the same day is still safe, it just does nothing
  * for anyone already sent to today.

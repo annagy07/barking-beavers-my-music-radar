@@ -34,7 +34,7 @@ export const onboardingSubmitSchema = z.object({
   concertLookaheadDays: z
     .number()
     .refine((v) => (CONCERT_LOOKAHEAD_DAYS as readonly number[]).includes(v)),
-  newsletterFrequency: z.enum(["weekly", "twice_weekly", "daily"]),
+  newsletterFrequency: z.enum(["weekly", "biweekly", "monthly"]),
   instantPresaleAlerts: z.boolean(),
   email: z.string().trim().email("Enter a valid email"),
   consent: z.literal(true, {

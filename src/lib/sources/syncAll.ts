@@ -6,7 +6,7 @@ import { syncTicketmasterForArtist, isTicketmasterConfigured } from "./ticketmas
 import { syncYoutubeForArtist, isYoutubeConfigured } from "./youtube";
 import { syncBlogNews, isBlogNewsConfigured } from "./blogNews";
 import { isSpotifyContentSyncConfigured } from "./spotifyClientCredentials";
-import { mapWithConcurrency, type SyncResult } from "./shared";
+import { mapWithConcurrency, sleep, type SyncResult } from "./shared";
 
 // How many artists to sync in parallel within a single source. Sequential
 // (1-at-a-time) doesn't scale past a couple dozen followed artists before
@@ -18,10 +18,14 @@ const ARTIST_CONCURRENCY = 8;
 // Spotify's Client Credentials rate limit turned out to be much easier to
 // trip (and much slower to recover from — the whole app can end up 429ing
 // on every request for a while, not just the burst that tripped it) than
-// Ticketmaster's or YouTube's, which were fine at ARTIST_CONCURRENCY. A
-// lower concurrency here means fewer simultaneous requests hitting an
-// already-strained limit.
-const SPOTIFY_CONCURRENCY = 3;
+// Ticketmaster's or YouTube's, which were fine at ARTIST_CONCURRENCY. Even
+// 3-at-a-time kept tripping it daily, so this is now fully sequential
+// (one artist at a time) with a deliberate pause between requests — see
+// SPOTIFY_REQUEST_DELAY_MS. Slower, but artists it doesn't get through in
+// one run are simply picked up by the next day's sync (see
+// ROUTE_TIME_BUDGET_MS below), same as before.
+const SPOTIFY_CONCURRENCY = 1;
+const SPOTIFY_REQUEST_DELAY_MS = 500;
 
 // If this many consecutive attempts all come back 429, the source is
 // rate-limited right now for the whole app, not just unlucky — burning the
@@ -55,6 +59,7 @@ async function syncPerArtistSource(
   enabled: boolean,
   syncOne: (db: PrismaClient, artist: Artist) => Promise<SyncResult>,
   concurrency: number = ARTIST_CONCURRENCY,
+  requestDelayMs = 0,
 ): Promise<SourceSyncResult> {
   const result: SourceSyncResult = { enabled, artistsProcessed: 0, created: 0, errors: [] };
   if (!enabled) return result;
@@ -83,6 +88,7 @@ async function syncPerArtistSource(
     } catch (err) {
       result.errors.push(`${artist.name}: ${(err as Error).message}`);
     }
+    if (requestDelayMs > 0) await sleep(requestDelayMs);
   });
 
   if (circuitOpen) {
@@ -108,6 +114,7 @@ export function syncSpotifyContent(): Promise<SourceSyncResult> {
     isSpotifyContentSyncConfigured(),
     syncSpotifyReleasesForArtist,
     SPOTIFY_CONCURRENCY,
+    SPOTIFY_REQUEST_DELAY_MS,
   );
 }
 

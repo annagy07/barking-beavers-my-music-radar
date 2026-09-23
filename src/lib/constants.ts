@@ -102,12 +102,8 @@ export const CONCERT_LOOKAHEAD_DAYS = [30, 90, 180] as const;
 
 export const NEWSLETTER_FREQUENCIES = [
   { id: "weekly", label: "Weekly", description: "One digest, every week." },
-  {
-    id: "twice_weekly",
-    label: "Twice a week",
-    description: "Monday and Thursday.",
-  },
-  { id: "daily", label: "Daily", description: "For the completists." },
+  { id: "biweekly", label: "Bi-weekly", description: "One digest, every two weeks." },
+  { id: "monthly", label: "Monthly", description: "One digest, once a month." },
 ] as const;
 
 export type NewsletterFrequencyId = (typeof NEWSLETTER_FREQUENCIES)[number]["id"];

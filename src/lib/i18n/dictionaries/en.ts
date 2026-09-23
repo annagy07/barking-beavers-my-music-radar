@@ -392,8 +392,8 @@ export const en = {
   },
   frequency: {
     weekly: { label: "Weekly", description: "One digest, every week." },
-    twice_weekly: { label: "Twice a week", description: "Monday and Thursday." },
-    daily: { label: "Daily", description: "For the completists." },
+    biweekly: { label: "Bi-weekly", description: "One digest, every two weeks." },
+    monthly: { label: "Monthly", description: "One digest, once a month." },
   } as Record<string, { label: string; description: string }>,
   discoveryLevels: {
     1: "Only artists I already know",

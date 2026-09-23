@@ -234,7 +234,7 @@ model UserPreference {
   cities               String   @default("[]") // JSON array string, e.g. ["Berlin","Hamburg"]
   concertRadiusKm      Int      @default(50)
   concertLookaheadDays Int      @default(90)
-  newsletterFrequency  String   @default("weekly") // "weekly" | "twice_weekly" | "daily"
+  newsletterFrequency  String   @default("weekly") // "weekly" | "biweekly" | "monthly"
   instantPresaleAlerts Boolean  @default(false)
   updatedAt            DateTime @updatedAt
 
