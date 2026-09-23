@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkCronSecret } from "@/lib/cronAuth";
 import { db } from "@/lib/db";
-import { decodeHtmlEntities } from "@/lib/sources/blogNews";
+import { decodeHtmlEntities } from "@/lib/htmlEntities";
 
 // One-off backfill: blog-sourced titles stored before decodeHtmlEntities
 // existed can still contain literal HTML entities (e.g. "&#8216;Nepo

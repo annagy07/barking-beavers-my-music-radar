@@ -1,5 +1,6 @@
 import "server-only";
 import type { RadarItem, RadarResult } from "@/lib/radar/types";
+import { decodeHtmlEntities } from "@/lib/htmlEntities";
 
 const INK = "#14100f";
 const INK_SOFT = "#4a4442";
@@ -46,11 +47,11 @@ function renderItem(item: RadarItem) {
                 ${escapeHtml(item.artistName)}
               </div>
               <div style="font-family:${DISPLAY_FONT};font-size:19px;line-height:1.2;color:${INK};font-weight:700;margin-bottom:4px;">
-                ${escapeHtml(item.title)}
+                ${escapeHtml(decodeHtmlEntities(item.title))}
               </div>
               ${meta ? `<div style="font-size:13px;color:${INK_SOFT};margin-bottom:6px;">${escapeHtml(meta)}</div>` : ""}
               <div style="font-size:14px;line-height:1.5;color:${INK};margin-bottom:8px;">
-                ${escapeHtml(item.description)}
+                ${escapeHtml(decodeHtmlEntities(item.description))}
               </div>
               <div style="font-size:12.5px;line-height:1.5;color:${INK_SOFT};font-style:italic;">
                 Why this is here: ${escapeHtml(item.reasons[0] ?? "")}

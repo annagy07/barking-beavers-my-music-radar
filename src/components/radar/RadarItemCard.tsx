@@ -1,6 +1,7 @@
 import { WhyThis } from "@/components/ui/WhyThis";
 import { RadarItem } from "@/lib/radar/types";
 import { useLocale } from "@/components/i18n/LocaleProvider";
+import { decodeHtmlEntities } from "@/lib/htmlEntities";
 
 function formatDate(iso: string | null, dateLocale: string) {
   if (!iso) return null;
@@ -40,11 +41,11 @@ export function RadarItemCard({ item }: { item: RadarItem }) {
           {item.artistName}
         </p>
         <h3 className="mt-1 font-display text-lg font-semibold leading-snug">
-          {item.title}
+          {decodeHtmlEntities(item.title)}
         </h3>
         {meta && <p className="mt-1 text-xs text-ink-soft">{meta}</p>}
         <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-          {item.description}
+          {decodeHtmlEntities(item.description)}
         </p>
         <WhyThis reason={item.reasons[0]} />
       </div>
