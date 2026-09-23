@@ -67,11 +67,50 @@ interface FeedItem {
 
 const xmlParser = new XMLParser({ ignoreAttributes: false });
 
+// Named entities beyond the 5 predefined XML ones (&amp; &lt; &gt; &quot;
+// &apos;, which the XML parser already resolves) that WordPress-generated
+// feeds commonly emit for typographic punctuation.
+const NAMED_HTML_ENTITIES: Record<string, string> = {
+  nbsp: " ",
+  hellip: "…",
+  mdash: "—",
+  ndash: "–",
+  lsquo: "‘",
+  rsquo: "’",
+  ldquo: "“",
+  rdquo: "”",
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+};
+
+// Many blog feeds put titles in a CDATA section whose content is *already*
+// HTML-entity-encoded by the CMS before being written into the feed (e.g.
+// "&#8216;Nepo Baby&#8217;") — and CDATA content is raw text by definition,
+// so no XML parser ever decodes entities inside it. Left alone, that
+// literal "&#8216;" string shows up verbatim in the newsletter. This
+// decodes both numeric (&#8216; / &#x2018;) and the common named entities
+// above after extraction.
+export function decodeHtmlEntities(text: string): string {
+  return text.replace(/&(#x[0-9a-fA-F]+|#[0-9]+|[a-zA-Z]+);/g, (match, entity: string) => {
+    if (entity[0] === "#") {
+      const codePoint =
+        entity[1] === "x" || entity[1] === "X"
+          ? parseInt(entity.slice(2), 16)
+          : parseInt(entity.slice(1), 10);
+      return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : match;
+    }
+    return NAMED_HTML_ENTITIES[entity] ?? match;
+  });
+}
+
 function textOf(value: unknown): string | null {
-  if (typeof value === "string") return value;
+  if (typeof value === "string") return decodeHtmlEntities(value);
   if (value && typeof value === "object" && "#text" in (value as Record<string, unknown>)) {
     const text = (value as Record<string, unknown>)["#text"];
-    return typeof text === "string" ? text : null;
+    return typeof text === "string" ? decodeHtmlEntities(text) : null;
   }
   return null;
 }
