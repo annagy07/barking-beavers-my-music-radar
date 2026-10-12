@@ -131,6 +131,7 @@ export const de: Dictionary = {
       hideTitle: "Diesen Artist nicht anzeigen",
       removeLabel: (name: string) => `${name} entfernen`,
       addAnother: "+ Weiteren Artist manuell hinzufügen",
+      suggestionsHeading: "Weitere Artists, die passen könnten",
     },
     preferences: {
       eyebrow: "Schritt 4",

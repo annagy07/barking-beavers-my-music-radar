@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Eyebrow } from "@/components/ui/Container";
 import { RelevanceExplainer } from "@/components/ui/RelevanceExplainer";
 import { ArtistSearch, SearchArtist } from "./ArtistSearch";
+import { ArtistSuggestions } from "./ArtistSuggestions";
 import { WizardArtist } from "@/lib/onboardingState";
 import { RELEVANCE_LEVELS, RelevanceId } from "@/lib/constants";
 import { useLocale } from "@/components/i18n/LocaleProvider";
@@ -28,6 +29,7 @@ export function StepReview({
   const [showAdd, setShowAdd] = useState(false);
   const visible = artists.filter((a) => !a.blocked);
   const hidden = artists.filter((a) => a.blocked);
+  const pickedNames = new Set(artists.map((a) => a.name.toLowerCase()));
 
   return (
     <div>
@@ -130,6 +132,25 @@ export function StepReview({
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {visible.length > 0 && (
+        <div className="mt-10">
+          <p className="font-mono text-xs uppercase tracking-wide text-ink-soft">
+            {s.suggestionsHeading}
+          </p>
+          <div className="mt-3 space-y-3">
+            {visible.map((a) => (
+              <ArtistSuggestions
+                key={a.artistId}
+                forArtistName={a.name}
+                genres={a.genres}
+                excludeNames={pickedNames}
+                onPick={onAdd}
+              />
+            ))}
+          </div>
         </div>
       )}
 

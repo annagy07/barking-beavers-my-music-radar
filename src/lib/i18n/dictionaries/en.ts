@@ -132,6 +132,7 @@ export const en = {
       hideTitle: "Don't show me this artist",
       removeLabel: (name: string) => `Remove ${name}`,
       addAnother: "+ Add another artist manually",
+      suggestionsHeading: "More artists to consider",
     },
     preferences: {
       eyebrow: "Step 4",
