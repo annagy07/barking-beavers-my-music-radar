@@ -56,9 +56,6 @@ function renderItem(item: RadarItem) {
               ${meta ? `<div style="font-size:13px;color:${INK_SOFT};margin-bottom:6px;">${escapeHtml(meta)}</div>` : ""}
               <div style="font-size:14px;line-height:1.5;color:${INK};margin-bottom:8px;">
                 ${escapeHtml(decodeHtmlEntities(item.description))}
-              </div>
-              <div style="font-size:12.5px;line-height:1.5;color:${INK_SOFT};font-style:italic;">
-                Why this is here: ${escapeHtml(item.reasons[0] ?? "")}
               </div>`;
 
   const body = item.imageUrl

@@ -27,6 +27,10 @@ import type { RadarItem, RadarResult, RadarSections } from "./types";
 // EMAIL_MAX_PER_SECTION in email/render.ts).
 const MAX_PER_SECTION = 15;
 const LOOKAHEAD_RELEVANT_TYPES = new Set(["concert", "tour", "presale"]);
+// "Just Released" should only ever show genuinely new releases, not whatever
+// a sync happened to backfill — independent of the 90-day cutoff
+// spotifyReleases.ts already applies at sync time.
+const RELEASE_MAX_AGE_DAYS = 60;
 
 function parseGenres(json: string): string[] {
   try {
@@ -206,6 +210,12 @@ async function buildRadar(
     if (!categoryId) continue; // content type disabled by the user
 
     let nearestConcertCity: string | null = null;
+
+    if (event.type === "release") {
+      const ageDays = (now.getTime() - event.publishedAt.getTime()) / (1000 * 60 * 60 * 24);
+      if (ageDays > RELEASE_MAX_AGE_DAYS) continue;
+    }
+
     if (event.type === "concert") {
       if (preference.cities.length === 0 || !event.city) continue;
       const nearest = nearestCity(cityLocations, preference.cities, event.city);
