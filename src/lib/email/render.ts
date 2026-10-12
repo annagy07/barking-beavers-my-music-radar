@@ -58,24 +58,26 @@ function renderItem(item: RadarItem) {
                 ${escapeHtml(decodeHtmlEntities(item.description))}
               </div>`;
 
-  const body = item.imageUrl
+  // Text always comes first and sits at the same left offset whether or not
+  // this item has an image — the image (when a sync found one) is an
+  // optional accent on the right instead, so items without one don't look
+  // misaligned next to items that do.
+  const imageCell = item.imageUrl
     ? `
             <td style="padding:2px 16px 2px 16px;" valign="top">
               <table role="presentation" cellpadding="0" cellspacing="0"><tr><td>
                 <img src="${escapeHtml(item.imageUrl)}" width="64" height="64" alt="" style="display:block;width:64px;height:64px;object-fit:cover;border:1px solid ${LINE};" />
               </td></tr></table>
-            </td>
-            <td style="padding:2px 0 2px 0;" valign="top">${textCell}
             </td>`
-    : `
-            <td style="padding:2px 0 2px 16px;">${textCell}
-            </td>`;
+    : "";
 
   return `
     <tr>
       <td style="padding:0 0 22px 0;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-left:3px solid ${ACCENT};">
-          <tr>${body}
+          <tr>
+            <td style="padding:2px 0 2px 16px;" valign="top">${textCell}
+            </td>${imageCell}
           </tr>
         </table>
       </td>
