@@ -101,11 +101,13 @@ export const de: Dictionary = {
       recommended: "Empfohlen",
       spotifyTitle: "Spotify verbinden",
       spotifyBody:
-        "Nur lesend. Wir sehen uns nur die Artists an, denen du folgst, deine Top Artists und deine gespeicherte Musik an. Nie deinen Hörverlauf, nie deine E Mail.",
-      manualTitle: "Artists manuell auswählen",
-      manualBody: "Suche und wähle selbst mindestens drei Artists aus. Kein Konto nötig.",
+        "Nur lesend. Wir sehen uns nur die Artists an, denen du folgst, deine Top Artists und deine gespeicherte Musik an. Nie deinen Hörverlauf, nie deine E Mail. Während der Testphase auf eine kleine Zahl verbundener Accounts begrenzt.",
+      manualTitle: "Artists suchen",
+      manualBody:
+        "Suche und wähle selbst mindestens drei Artists aus — wir schlagen dir dabei direkt ähnliche vor. Kein Konto nötig, kein Limit.",
       hybridTitle: "Spotify verbinden, dann anpassen",
-      hybridBody: "Importieren als Ausgangspunkt, danach im nächsten Schritt alles hinzufügen, entfernen und neu einordnen.",
+      hybridBody:
+        "Importieren als Ausgangspunkt, danach im nächsten Schritt alles hinzufügen, entfernen und neu einordnen. Gleiches Tester-Limit wie bei Spotify verbinden.",
       mockNotice:
         "Keine Spotify Entwickler Zugangsdaten lokal eingerichtet? Beim Verbinden wird automatisch ein realistischer Testimport verwendet, damit du den kompletten Ablauf trotzdem ausprobieren kannst.",
     },

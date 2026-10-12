@@ -102,11 +102,13 @@ export const en = {
       recommended: "Recommended",
       spotifyTitle: "Connect Spotify",
       spotifyBody:
-        "Read only. We only look at artists you follow, your top artists and your saved music. Never your listening history, never your email.",
-      manualTitle: "Choose artists manually",
-      manualBody: "Search and pick at least three artists yourself. No account needed.",
+        "Read only. We only look at artists you follow, your top artists and your saved music. Never your listening history, never your email. Limited to a small number of connected accounts while this is in testing.",
+      manualTitle: "Search for artists",
+      manualBody:
+        "Search and pick at least three artists — we'll suggest similar ones as you go. No account needed, no limits.",
       hybridTitle: "Connect Spotify, then customize",
-      hybridBody: "Import as a starting point, then add, remove and re-rank anything on the next screen.",
+      hybridBody:
+        "Import as a starting point, then add, remove and re-rank anything on the next screen. Same tester limit as Connect Spotify.",
       mockNotice:
         "No Spotify developer credentials configured locally? Connecting will automatically use a realistic mock import so you can still try the full flow.",
     },
