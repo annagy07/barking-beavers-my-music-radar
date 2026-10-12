@@ -118,6 +118,7 @@ export const en = {
       empty: "Nothing yet. Search above to get started.",
       pickMore: (count: number) => `Pick ${count} more to continue.`,
       removeLabel: (name: string) => `Remove ${name}`,
+      suggestionsFor: (name: string) => `Because you like ${name}`,
     },
     review: {
       eyebrow: "Step 3",

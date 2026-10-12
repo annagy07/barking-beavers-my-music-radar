@@ -2,6 +2,7 @@
 
 import { Eyebrow } from "@/components/ui/Container";
 import { ArtistSearch, SearchArtist } from "./ArtistSearch";
+import { ArtistSuggestions } from "./ArtistSuggestions";
 import { WizardArtist } from "@/lib/onboardingState";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 
@@ -17,6 +18,7 @@ export function StepArtists({
   const { t } = useLocale();
   const s = t.onboarding.artists;
   const minReached = artists.length >= 3;
+  const pickedNames = new Set(artists.map((a) => a.name.toLowerCase()));
 
   return (
     <div>
@@ -40,24 +42,38 @@ export function StepArtists({
         {artists.length === 0 ? (
           <p className="mt-3 text-sm text-ink-soft">{s.empty}</p>
         ) : (
-          <ul className="mt-3 flex flex-wrap gap-2">
-            {artists.map((a) => (
-              <li
-                key={a.artistId}
-                className="flex items-center gap-2 border border-ink px-3 py-1.5 text-sm"
-              >
-                {a.name}
-                <button
-                  type="button"
-                  onClick={() => onRemove(a.artistId)}
-                  aria-label={s.removeLabel(a.name)}
-                  className="text-ink-soft hover:text-accent"
+          <>
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {artists.map((a) => (
+                <li
+                  key={a.artistId}
+                  className="flex items-center gap-2 border border-ink px-3 py-1.5 text-sm"
                 >
-                  ×
-                </button>
-              </li>
-            ))}
-          </ul>
+                  {a.name}
+                  <button
+                    type="button"
+                    onClick={() => onRemove(a.artistId)}
+                    aria-label={s.removeLabel(a.name)}
+                    className="text-ink-soft hover:text-accent"
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-4 space-y-3">
+              {artists.map((a) => (
+                <ArtistSuggestions
+                  key={a.artistId}
+                  forArtistName={a.name}
+                  genres={a.genres}
+                  excludeNames={pickedNames}
+                  onPick={onAdd}
+                />
+              ))}
+            </div>
+          </>
         )}
       </div>
 

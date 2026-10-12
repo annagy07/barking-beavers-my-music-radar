@@ -117,6 +117,7 @@ export const de: Dictionary = {
       empty: "Noch nichts. Suche oben, um loszulegen.",
       pickMore: (count: number) => `Wähle noch ${count} weitere, um fortzufahren.`,
       removeLabel: (name: string) => `${name} entfernen`,
+      suggestionsFor: (name: string) => `Weil du ${name} magst`,
     },
     review: {
       eyebrow: "Schritt 3",
