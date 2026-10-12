@@ -62,17 +62,19 @@ export function StepArtists({
               ))}
             </ul>
 
-            <div className="mt-4 space-y-3">
-              {artists.map((a) => (
-                <ArtistSuggestions
-                  key={a.artistId}
-                  forArtistName={a.name}
-                  genres={a.genres}
-                  excludeNames={pickedNames}
-                  onPick={onAdd}
-                />
-              ))}
-            </div>
+            {minReached && (
+              <div className="mt-4 space-y-3">
+                {artists.map((a) => (
+                  <ArtistSuggestions
+                    key={a.artistId}
+                    forArtistName={a.name}
+                    genres={a.genres}
+                    excludeNames={pickedNames}
+                    onPick={onAdd}
+                  />
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>
