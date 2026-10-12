@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import { buildNewsletterEmail } from "@/lib/email/sendScheduled";
+import { getLatestRadarEdition } from "@/lib/radar/editions";
 import { NEWSLETTER_FREQUENCIES } from "@/lib/constants";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -17,10 +18,18 @@ export default async function NewsletterPreviewPage() {
   const locale = await getLocale();
   const t = getDictionary(locale);
 
-  const [{ html }, preference] = await Promise.all([
-    buildNewsletterEmail(user.id, user.email),
+  const [latestEdition, preference] = await Promise.all([
+    getLatestRadarEdition(user.id),
     db.userPreference.findUnique({ where: { userId: user.id } }),
   ]);
+
+  // Mirrors /radar's own rule: once a real scheduled email has gone out,
+  // this shows exactly that frozen edition instead of recomputing live —
+  // otherwise the two pages (and the actual inbox) can silently drift
+  // apart. Before the first send, there's nothing to mirror yet, so this
+  // still falls back to a live, unfiltered preview.
+  const isLive = !latestEdition;
+  const { html } = await buildNewsletterEmail(user.id, user.email, latestEdition ?? undefined);
 
   const frequencyId = preference?.newsletterFrequency ?? "weekly";
   const frequencyLabel =
@@ -42,6 +51,12 @@ export default async function NewsletterPreviewPage() {
             {frequencyLabel.toLowerCase()}
             {t.newsletterPreview.bodyAfter}
           </p>
+
+          {isLive && (
+            <p className="mt-4 max-w-xl border border-line bg-paper-raised/60 px-4 py-3 text-sm text-ink-soft">
+              {t.radar.liveNotice}
+            </p>
+          )}
 
           <div className="mt-8">
             <SendTestButton />
