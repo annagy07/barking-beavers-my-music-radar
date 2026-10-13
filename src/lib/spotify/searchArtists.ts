@@ -50,20 +50,61 @@ export async function searchSpotifyArtists(
   }
 }
 
-/** "People who like this artist might also like…", without Spotify's own
- * related-artists/recommendations endpoints — both return 403 for any app
- * created after Nov 2024 that isn't in Extended Quota Mode (which itself
- * requires a registered business with 250k+ MAU, out of reach for a new
- * product). Genre-filtered catalog search is the documented workaround:
- * query each of the seed artist's genres and pool the hits, same Client
- * Credentials token as everything else in this file — no per-user Spotify
- * login, so it isn't subject to the Development Mode user cap either. */
+/** The real "fans also like" endpoint — Spotify documents it as 403'd for
+ * any app created after Nov 2024 without Extended Quota Mode, but that's
+ * per-app, not universal, so it's worth actually trying rather than taking
+ * that as gospel for every app. Returns null (not []) on any non-2xx or
+ * error so the caller can tell "confirmed blocked/unavailable, fall back"
+ * apart from "called fine, this artist genuinely has none". */
+async function getRelatedArtists(
+  spotifyId: string,
+  excludeNames: Set<string>,
+  limit: number,
+): Promise<SpotifyArtistSearchHit[] | null> {
+  try {
+    const token = await getSpotifyAppToken();
+    const res = await fetch(`https://api.spotify.com/v1/artists/${spotifyId}/related-artists`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const items = (json.artists ?? []) as SpotifySearchArtistObject[];
+    return items
+      .filter((a) => !excludeNames.has(a.name.toLowerCase()))
+      .slice(0, limit)
+      .map((a) => ({
+        spotifyId: a.id,
+        name: a.name,
+        genres: a.genres ?? [],
+        imageUrl: a.images?.[a.images.length - 1]?.url ?? null,
+      }));
+  } catch {
+    return null;
+  }
+}
+
+/** "People who like this artist might also like…". Tries the real
+ * related-artists endpoint first (see getRelatedArtists) and only falls
+ * back to genre-filtered catalog search — querying each of the seed
+ * artist's genres and pooling the hits — when that's unavailable for this
+ * app. Both paths use the same Client Credentials token as everything else
+ * in this file — no per-user Spotify login, so neither is subject to the
+ * Development Mode user cap. */
 export async function suggestSimilarArtists(
+  spotifyId: string | null,
   genres: string[],
   excludeNames: Set<string>,
   limit = 10,
 ): Promise<SpotifyArtistSearchHit[]> {
-  if (!isSpotifyContentSyncConfigured() || genres.length === 0) return [];
+  if (!isSpotifyContentSyncConfigured()) return [];
+
+  if (spotifyId) {
+    const related = await getRelatedArtists(spotifyId, excludeNames, limit);
+    if (related !== null) return related;
+  }
+
+  if (genres.length === 0) return [];
 
   const found = new Map<string, SpotifyArtistSearchHit>();
   for (const genre of genres.slice(0, 3)) {

@@ -11,17 +11,20 @@ interface SuggestionHit {
   imageUrl: string | null;
 }
 
-/** "Because you like X" row under a picked artist — genre-based Spotify
- * suggestions (see suggestSimilarArtists for why), one-click add straight
- * into the wizard's picked list. Renders nothing once loaded if the seed
- * artist has no genres (e.g. a manually-typed one) or Spotify isn't
+/** "Because you like X" row under a picked artist — Spotify's related-artists
+ * endpoint when available, genre-filtered search otherwise (see
+ * suggestSimilarArtists), one-click add straight into the wizard's picked
+ * list. Renders nothing once loaded if the seed artist has neither a
+ * spotifyId nor genres (e.g. a bare manually-typed name) or Spotify isn't
  * configured, rather than showing an empty, confusing section. */
 export function ArtistSuggestions({
+  artistId,
   forArtistName,
   genres,
   excludeNames,
   onPick,
 }: {
+  artistId: string;
   forArtistName: string;
   genres: string[];
   excludeNames: Set<string>;
@@ -29,18 +32,14 @@ export function ArtistSuggestions({
 }) {
   const { t } = useLocale();
   const [suggestions, setSuggestions] = useState<SuggestionHit[]>([]);
-  const [loading, setLoading] = useState(genres.length > 0);
+  const [loading, setLoading] = useState(true);
   const [pendingKey, setPendingKey] = useState<string | null>(null);
 
   useEffect(() => {
-    if (genres.length === 0) {
-      setSuggestions([]);
-      setLoading(false);
-      return;
-    }
     let cancelled = false;
     setLoading(true);
     const params = new URLSearchParams({
+      artistId,
       genres: genres.slice(0, 3).join(","),
       excludeNames: [...excludeNames].join(","),
     });
@@ -59,7 +58,7 @@ export function ArtistSuggestions({
     // change from other picks — otherwise adding any artist anywhere would
     // re-fetch (and reshuffle) every other artist's suggestion row.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [forArtistName, genres.join(",")]);
+  }, [artistId, forArtistName, genres.join(",")]);
 
   async function pick(hit: SuggestionHit) {
     const key = hit.spotifyId ?? hit.name;

@@ -144,6 +144,7 @@ export function StepReview({
             {visible.map((a) => (
               <ArtistSuggestions
                 key={a.artistId}
+                artistId={a.artistId}
                 forArtistName={a.name}
                 genres={a.genres}
                 excludeNames={pickedNames}
