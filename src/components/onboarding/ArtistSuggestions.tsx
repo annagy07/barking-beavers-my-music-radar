@@ -54,11 +54,15 @@ export function ArtistSuggestions({
     return () => {
       cancelled = true;
     };
-    // Re-fetches only when the seed artist changes, not on every exclude-set
-    // change from other picks — otherwise adding any artist anywhere would
-    // re-fetch (and reshuffle) every other artist's suggestion row.
+    // Fetches exactly once per artist card, keyed only on artistId. Genres
+    // and forArtistName were in this list before — harmless in theory since
+    // they shouldn't change for an already-picked artist, but suggestions
+    // were observed flashing in and then disappearing, consistent with a
+    // second, overwriting fetch firing right after the first. Narrowing to
+    // artistId alone removes that whole class of re-fetch regardless of
+    // what was actually triggering it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [artistId, forArtistName, genres.join(",")]);
+  }, [artistId]);
 
   async function pick(hit: SuggestionHit) {
     const key = hit.spotifyId ?? hit.name;
