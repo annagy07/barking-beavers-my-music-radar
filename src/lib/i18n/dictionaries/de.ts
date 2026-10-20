@@ -137,9 +137,10 @@ export const de: Dictionary = {
       eyebrow: "Schritt 4",
       title: "Was soll dein Radar beobachten?",
       body: "Nur was du hier auswählst, kann jemals in deinem Digest auftauchen.",
-      discoveryTitle: "Wie experimentierfreudig soll die Entdeckung sein?",
-      discoveryBody: "Betrifft nur den Entdecken Bereich, nie deine bereits verfolgten Artists.",
-      discoveryMin: "1 · Nur was ich schon kenne",
+      discoveryTitle: "Discovery Modus",
+      discoveryBody:
+        "Artists, die zu deinen gefolgten passen, gefunden über Spotify. Auf 1 stellen, um es auszuschalten — betrifft nie deine bereits verfolgten Artists.",
+      discoveryMin: "1 · Aus",
       discoveryMax: "5 · Überrasch mich",
     },
     concerts: {
@@ -266,7 +267,7 @@ export const de: Dictionary = {
     title: "Einstellungen bearbeiten",
     body: "Jede Änderung hier passt deinen Radar sofort an.",
     watches: "Was dein Radar beobachtet",
-    discoveryLevel: "Entdeckungslevel",
+    discoveryLevel: "Discovery Modus",
     concerts: "Konzerte",
     cityLabel: "Städte",
     radius: "Radius",
@@ -382,10 +383,6 @@ export const de: Dictionary = {
     interesting_facts: {
       label: "Interessante Fakten",
       description: "Kleine, verlässliche, wissenswerte Details, inklusive Berichten aus Musikblogs und Magazinen.",
-    },
-    new_artists: {
-      label: "Discovery Modus",
-      description: "Artists, die zu deinen gefolgten passen, gefunden über Spotify — nie eine Blackbox.",
     },
   },
   relevance: {

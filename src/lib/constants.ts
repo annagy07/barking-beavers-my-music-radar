@@ -56,11 +56,6 @@ export const CONTENT_CATEGORIES = [
     label: "Interesting facts",
     description: "Small, credible, worth-knowing details, including coverage from music blogs and magazines.",
   },
-  {
-    id: "new_artists",
-    label: "Discovery Mode",
-    description: "Artists related to the ones you follow, found via Spotify — never a black box.",
-  },
 ] as const;
 
 export type ContentCategoryId = (typeof CONTENT_CATEGORIES)[number]["id"];
@@ -168,7 +163,6 @@ export const CATEGORY_TO_EVENT: Record<
   collaborations: { type: "collaboration" },
   behind_the_scenes: { type: "fact", subtypes: ["behind_the_scenes"] },
   interesting_facts: { type: "fact", subtypes: ["interesting_fact"] },
-  new_artists: { type: "discovery" },
 };
 
 export const GENRES = [

@@ -87,7 +87,6 @@ async function main() {
         "interviews",
         "collaborations",
         "interesting_facts",
-        "new_artists",
       ]),
       discoveryLevel: 4,
       cities: JSON.stringify(["Berlin", "Hamburg"]),

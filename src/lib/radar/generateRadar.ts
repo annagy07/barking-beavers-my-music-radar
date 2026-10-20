@@ -164,8 +164,9 @@ async function buildRadar(
     if (blockedArtistIds.has(event.artistId)) continue;
 
     if (event.type === "discovery") {
-      const categoryId = matchCategory("discovery", event.subtype);
-      if (!categoryId) continue; // new_artists category disabled
+      // Discovery Mode no longer has its own on/off category toggle — the
+      // discoveryLevel slider alone decides whether it's on (1 = off) and
+      // how much of it shows (maxDiscoveryItems below).
       if (preference.discoveryLevel < 2) continue; // "only artists I already know"
       if (followed.has(event.artistId)) continue; // already tracked, not a discovery
       if (discoveryCount >= maxDiscoveryItems) continue;
@@ -183,10 +184,7 @@ async function buildRadar(
       if (!matched) continue; // never show an unexplainable discovery item
 
       let score = SCORE_GENRE_OR_RELATION_MATCH + SCORE_CATEGORY_ENABLED;
-      const reasons = [
-        reason!,
-        `You enabled "${labelForCategory(categoryId)}" and set discovery to ${preference.discoveryLevel}/5.`,
-      ];
+      const reasons = [reason!, `Discovery Mode is on, set to ${preference.discoveryLevel}/5.`];
       if (isFresh(event.publishedAt, now)) {
         score += SCORE_FRESH_ITEM;
         reasons.push("Freshly surfaced.");

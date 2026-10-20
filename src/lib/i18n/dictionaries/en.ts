@@ -138,9 +138,10 @@ export const en = {
       eyebrow: "Step 4",
       title: "What do you want your radar to watch?",
       body: "Only what you select here can ever show up in your digest.",
-      discoveryTitle: "How adventurous should discovery be?",
-      discoveryBody: "Controls the Discovery section only, never your followed artists.",
-      discoveryMin: "1 · Only what I know",
+      discoveryTitle: "Discovery Mode",
+      discoveryBody:
+        "Artists related to the ones you follow, found via Spotify. Set to 1 to turn it off — never affects your followed artists.",
+      discoveryMin: "1 · Off",
       discoveryMax: "5 · Surprise me",
     },
     concerts: {
@@ -267,7 +268,7 @@ export const en = {
     title: "Edit your preferences",
     body: "Every change here re-shapes your radar immediately.",
     watches: "What your radar watches",
-    discoveryLevel: "Discovery level",
+    discoveryLevel: "Discovery Mode",
     concerts: "Concerts",
     cityLabel: "Cities",
     radius: "Radius",
@@ -383,10 +384,6 @@ export const en = {
     interesting_facts: {
       label: "Interesting facts",
       description: "Small, credible, worth-knowing details, including coverage from music blogs and magazines.",
-    },
-    new_artists: {
-      label: "Discovery Mode",
-      description: "Artists related to the ones you follow, found via Spotify — never a black box.",
     },
   } as Record<string, { label: string; description: string }>,
   relevance: {
