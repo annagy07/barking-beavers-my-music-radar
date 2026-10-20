@@ -69,7 +69,10 @@ async function getRelatedArtists(
       cache: "no-store",
       signal: AbortSignal.timeout(6000),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error(`[suggestions] related-artists ${spotifyId} -> HTTP ${res.status}`);
+      return null;
+    }
     const json = await res.json();
     const items = (json.artists ?? []) as SpotifySearchArtistObject[];
     return items
@@ -81,7 +84,8 @@ async function getRelatedArtists(
         genres: a.genres ?? [],
         imageUrl: a.images?.[a.images.length - 1]?.url ?? null,
       }));
-  } catch {
+  } catch (err) {
+    console.error(`[suggestions] related-artists ${spotifyId} threw:`, err);
     return null;
   }
 }
@@ -99,14 +103,20 @@ export async function suggestSimilarArtists(
   excludeNames: Set<string>,
   limit = 10,
 ): Promise<SpotifyArtistSearchHit[]> {
-  if (!isSpotifyContentSyncConfigured()) return [];
+  if (!isSpotifyContentSyncConfigured()) {
+    console.error("[suggestions] Spotify not configured (SPOTIFY_CLIENT_ID/SECRET missing)");
+    return [];
+  }
 
   if (spotifyId) {
     const related = await getRelatedArtists(spotifyId, excludeNames, limit);
     if (related !== null) return related;
   }
 
-  if (genres.length === 0) return [];
+  if (genres.length === 0) {
+    console.error(`[suggestions] no genres for spotifyId=${spotifyId ?? "null"}, nothing to search`);
+    return [];
+  }
 
   const found = new Map<string, SpotifyArtistSearchHit>();
   for (const genre of genres.slice(0, 3)) {
@@ -119,7 +129,10 @@ export async function suggestSimilarArtists(
         cache: "no-store",
         signal: AbortSignal.timeout(6000),
       });
-      if (!res.ok) continue;
+      if (!res.ok) {
+        console.error(`[suggestions] genre search "${genre}" -> HTTP ${res.status}`);
+        continue;
+      }
       const json = await res.json();
       const items = (json.artists?.items ?? []) as SpotifySearchArtistObject[];
       for (const a of items) {
@@ -132,10 +145,13 @@ export async function suggestSimilarArtists(
           imageUrl: a.images?.[a.images.length - 1]?.url ?? null,
         });
       }
-    } catch {
-      // Degrade silently, same as searchSpotifyArtists — one bad genre
-      // query shouldn't blank out suggestions from the others.
+    } catch (err) {
+      // Degrade silently to the caller, same as searchSpotifyArtists — one
+      // bad genre query shouldn't blank out suggestions from the others —
+      // but still log so a run of genre failures shows up somewhere.
+      console.error(`[suggestions] genre search "${genre}" threw:`, err);
     }
   }
+  console.log(`[suggestions] genre-search fallback found ${found.size} for genres=${genres.join("|")}`);
   return [...found.values()].slice(0, limit);
 }

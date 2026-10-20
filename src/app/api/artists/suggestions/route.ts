@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { suggestSimilarArtists } from "@/lib/spotify/searchArtists";
 
-const SUGGESTION_LIMIT = 10;
+const SUGGESTION_LIMIT = 3;
 
 /** Onboarding's "because you like X" row. Looks up the seed artist's own
  * spotifyId (set when they were originally resolved from a Spotify search
