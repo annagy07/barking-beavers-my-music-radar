@@ -5,6 +5,7 @@ import { syncSpotifyReleasesForArtist } from "./spotifyReleases";
 import { syncTicketmasterForArtist, isTicketmasterConfigured } from "./ticketmaster";
 import { syncYoutubeForArtist, isYoutubeConfigured } from "./youtube";
 import { syncBlogNews, isBlogNewsConfigured } from "./blogNews";
+import { syncDiscoveryForArtist } from "./discoverySync";
 import { isSpotifyContentSyncConfigured } from "./spotifyClientCredentials";
 import { mapWithConcurrency, sleep, type SyncResult } from "./shared";
 
@@ -126,6 +127,18 @@ export function syncYoutubeContent(): Promise<SourceSyncResult> {
   return syncPerArtistSource(isYoutubeConfigured(), syncYoutubeForArtist);
 }
 
+// Discovery Mode calls the same Spotify Client Credentials endpoints as the
+// releases sync (related-artists, falling back to search) — same rate-limit
+// behavior, same fix: sequential with a pause between requests.
+export function syncDiscoveryContent(): Promise<SourceSyncResult> {
+  return syncPerArtistSource(
+    isSpotifyContentSyncConfigured(),
+    syncDiscoveryForArtist,
+    SPOTIFY_CONCURRENCY,
+    SPOTIFY_REQUEST_DELAY_MS,
+  );
+}
+
 export async function syncBlogNewsContent(): Promise<SourceSyncResult> {
   const enabled = isBlogNewsConfigured();
   const result: SourceSyncResult = { enabled, artistsProcessed: 0, created: 0, errors: [] };
@@ -145,22 +158,25 @@ export interface SyncAllSummary {
   ticketmaster: SourceSyncResult;
   youtube: SourceSyncResult;
   blogNews: SourceSyncResult;
+  discovery: SourceSyncResult;
 }
 
 /**
- * Runs all four sources in one call. Handy for local testing on a small
+ * Runs all five sources in one call. Handy for local testing on a small
  * account, but at real scale (100+ followed artists) this is exactly what
- * timed out in production — the scheduled cron uses the four single-source
+ * timed out in production — the scheduled cron uses the single-source
  * routes instead, each getting its own time budget (see
- * /api/cron/sync-spotify, sync-ticketmaster, sync-youtube, sync-blognews).
- * Kept here for manual full-sync testing via /api/cron/sync-content.
+ * /api/cron/sync-spotify, sync-ticketmaster, sync-youtube, sync-blognews,
+ * sync-discovery). Kept here for manual full-sync testing via
+ * /api/cron/sync-content.
  */
 export async function syncAllContent(): Promise<SyncAllSummary> {
-  const [spotify, ticketmaster, youtube, blogNews] = await Promise.all([
+  const [spotify, ticketmaster, youtube, blogNews, discovery] = await Promise.all([
     syncSpotifyContent(),
     syncTicketmasterContent(),
     syncYoutubeContent(),
     syncBlogNewsContent(),
+    syncDiscoveryContent(),
   ]);
 
   return {
@@ -169,10 +185,12 @@ export async function syncAllContent(): Promise<SyncAllSummary> {
       ticketmaster.artistsProcessed,
       youtube.artistsProcessed,
       blogNews.artistsProcessed,
+      discovery.artistsProcessed,
     ),
     spotify,
     ticketmaster,
     youtube,
     blogNews,
+    discovery,
   };
 }

@@ -291,6 +291,29 @@ artists on their radar.
   feature existed are covered by the same `backfill-release-artwork`
   admin route the missing-cover-art fix uses (it backfills both fields).
 
+## Discovery Mode (related-artist sync)
+
+The "new_artists" content category ("Discovery Mode" in the UI) used to
+rely on a handful of hand-curated `ArtistRelation` rows in the seed data —
+three artists, total, forever. `src/lib/sources/discoverySync.ts` replaces
+that with an ongoing sync: for every followed artist with a `spotifyId`, it
+calls `suggestSimilarArtists` (same related-artists-then-genre-search logic
+onboarding's "because you like X" row uses — see "To get around Spotify's
+related-artists restriction" above) and records up to 3 results each as a
+`discovery` MusicEvent, plus the `ArtistRelation` edge (`reasonType:
+"spotify_related"`) `generateRadar.ts` already reads to build the "You like
+X — …" reason text. No changes needed to the scoring/radar code itself —
+it already supported Spotify-sourced discovery edges, there just weren't
+any being generated.
+
+- **Syncing**: `/api/cron/sync-discovery` (daily, 06:50 UTC in
+  `vercel.json`, after the other content syncs), same sequential-with-delay
+  pacing as `spotifyReleases.ts` since it hits the same rate-limited
+  Client Credentials endpoints.
+- Degrades the same way search/suggestions do: if `related-artists` 403s
+  for this app, falls back to genre search; if an artist has neither a
+  `spotifyId` nor genres, it's simply skipped that run.
+
 ## Sending the newsletter for real
 
 By default the app runs in dev mode: email "sends" just log to the server

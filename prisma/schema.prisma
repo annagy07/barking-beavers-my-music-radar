@@ -194,12 +194,14 @@ model Artist {
 }
 
 /// Explainable discovery edges: why English Teacher gets suggested to a
-/// Fontaines D.C. fan. Mock/manually curated for the MVP.
+/// Fontaines D.C. fan. The small hand-curated seed set used "manual";
+/// Discovery Mode's ongoing sync (discoverySync.ts, Spotify's
+/// related-artists/genre search) writes "spotify_related" instead.
 model ArtistRelation {
   id           String  @id @default(cuid())
   fromArtistId String
   toArtistId   String
-  reasonType   String // "same_genre" | "same_label" | "shared_festival_lineup" | "support_act" | "collaboration" | "shared_producer" | "manual"
+  reasonType   String // "same_genre" | "same_label" | "shared_festival_lineup" | "support_act" | "collaboration" | "shared_producer" | "manual" | "spotify_related"
   note         String?
 
   fromArtist Artist @relation("relationFrom", fields: [fromArtistId], references: [id], onDelete: Cascade)

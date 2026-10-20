@@ -58,8 +58,8 @@ export const CONTENT_CATEGORIES = [
   },
   {
     id: "new_artists",
-    label: "New artists",
-    description: "Explainable discovery, never a black box.",
+    label: "Discovery Mode",
+    description: "Artists related to the ones you follow, found via Spotify — never a black box.",
   },
 ] as const;
 

@@ -384,7 +384,10 @@ export const en = {
       label: "Interesting facts",
       description: "Small, credible, worth-knowing details, including coverage from music blogs and magazines.",
     },
-    new_artists: { label: "New artists", description: "Explainable discovery, never a black box." },
+    new_artists: {
+      label: "Discovery Mode",
+      description: "Artists related to the ones you follow, found via Spotify — never a black box.",
+    },
   } as Record<string, { label: string; description: string }>,
   relevance: {
     essential: { label: "Essential", description: "Never miss anything.", tierLabel: "Very relevant" },

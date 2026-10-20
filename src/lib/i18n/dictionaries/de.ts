@@ -383,7 +383,10 @@ export const de: Dictionary = {
       label: "Interessante Fakten",
       description: "Kleine, verlässliche, wissenswerte Details, inklusive Berichten aus Musikblogs und Magazinen.",
     },
-    new_artists: { label: "Neue Artists", description: "Erklärbare Entdeckungen, nie eine Blackbox." },
+    new_artists: {
+      label: "Discovery Modus",
+      description: "Artists, die zu deinen gefolgten passen, gefunden über Spotify — nie eine Blackbox.",
+    },
   },
   relevance: {
     essential: { label: "Essenziell", description: "Nichts soll dir entgehen.", tierLabel: "Sehr relevant" },

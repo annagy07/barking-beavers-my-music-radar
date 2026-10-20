@@ -21,6 +21,10 @@
       "schedule": "40 6 * * *"
     },
     {
+      "path": "/api/cron/sync-discovery",
+      "schedule": "50 6 * * *"
+    },
+    {
       "path": "/api/cron/send-newsletters",
       "schedule": "0 7 * * *"
     }
