@@ -25,6 +25,10 @@ export async function getSpotifyAppToken(): Promise<string> {
       Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
     },
     body: "grant_type=client_credentials",
+    // Onboarding's suggestion row fires several of these per artist card —
+    // a slow/hanging token request shouldn't stall the whole page while a
+    // visitor is already clicking through later steps.
+    signal: AbortSignal.timeout(6000),
   });
   if (!res.ok) {
     throw new Error(`Spotify client-credentials token request failed: ${res.status}`);

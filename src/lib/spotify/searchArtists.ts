@@ -35,6 +35,7 @@ export async function searchSpotifyArtists(
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
+      signal: AbortSignal.timeout(6000),
     });
     if (!res.ok) return [];
     const json = await res.json();
@@ -66,6 +67,7 @@ async function getRelatedArtists(
     const res = await fetch(`https://api.spotify.com/v1/artists/${spotifyId}/related-artists`, {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
+      signal: AbortSignal.timeout(6000),
     });
     if (!res.ok) return null;
     const json = await res.json();
@@ -115,6 +117,7 @@ export async function suggestSimilarArtists(
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
         cache: "no-store",
+        signal: AbortSignal.timeout(6000),
       });
       if (!res.ok) continue;
       const json = await res.json();

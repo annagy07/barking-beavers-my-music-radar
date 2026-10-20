@@ -43,10 +43,17 @@ export function ArtistSuggestions({
       genres: genres.slice(0, 3).join(","),
       excludeNames: [...excludeNames].join(","),
     });
-    fetch(`/api/artists/suggestions?${params}`)
+    // Belt-and-braces on top of the server-side timeouts in
+    // suggestSimilarArtists: a visitor on a flaky connection shouldn't have
+    // a stalled background request for this card hang around indefinitely
+    // while they've already moved on to later steps.
+    fetch(`/api/artists/suggestions?${params}`, { signal: AbortSignal.timeout(10_000) })
       .then((res) => res.json())
       .then((data) => {
         if (!cancelled) setSuggestions(data.artists ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setSuggestions([]);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
