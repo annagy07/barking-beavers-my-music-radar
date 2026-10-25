@@ -97,7 +97,7 @@ export const en = {
     method: {
       eyebrow: "Step 1",
       title: "Tell us about your music taste",
-      body: "Search and pick your artists — you review and edit everything before we send you anything.",
+      body: "You review and edit everything before we send you anything.",
       error: "Couldn’t connect to Spotify. Try again, or choose artists manually below.",
       recommended: "Recommended",
       spotifyTitle: "Connect Spotify",
@@ -105,7 +105,7 @@ export const en = {
         "Read only. We only look at artists you follow, your top artists and your saved music. Never your listening history, never your email. Limited to a small number of connected accounts while this is in testing.",
       manualTitle: "Search for artists",
       manualBody:
-        "Search and pick at least three artists — we'll suggest similar ones as you go. No account needed, no limits.",
+        "Search and pick at least three artists — we'll suggest similar ones as you go.",
       hybridTitle: "Connect Spotify, then customize",
       hybridBody:
         "Import as a starting point, then add, remove and re-rank anything on the next screen. Same tester limit as Connect Spotify.",

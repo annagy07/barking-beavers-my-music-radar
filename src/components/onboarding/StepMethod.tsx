@@ -38,9 +38,11 @@ export function StepMethod({
           onClick={onChooseManual}
           className="group border-2 border-ink bg-ink p-6 text-left text-paper transition-colors hover:bg-accent hover:text-accent-ink hover:border-accent"
         >
-          <span className="font-mono text-xs uppercase tracking-wide opacity-70">
-            {s.recommended}
-          </span>
+          {SHOW_SPOTIFY_CONNECT && (
+            <span className="font-mono text-xs uppercase tracking-wide opacity-70">
+              {s.recommended}
+            </span>
+          )}
           <h2 className="mt-2 font-display text-xl font-semibold">
             {s.manualTitle}
           </h2>

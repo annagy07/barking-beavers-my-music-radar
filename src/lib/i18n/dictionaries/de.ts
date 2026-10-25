@@ -96,7 +96,7 @@ export const de: Dictionary = {
     method: {
       eyebrow: "Schritt 1",
       title: "Erzähl uns von deinem Musikgeschmack",
-      body: "Such dir deine Artists aus — du prüfst und änderst alles, bevor wir dir irgendetwas schicken.",
+      body: "Du prüfst und änderst alles, bevor wir dir irgendetwas schicken.",
       error: "Verbindung zu Spotify fehlgeschlagen. Versuch es nochmal oder wähle Artists unten manuell aus.",
       recommended: "Empfohlen",
       spotifyTitle: "Spotify verbinden",
@@ -104,7 +104,7 @@ export const de: Dictionary = {
         "Nur lesend. Wir sehen uns nur die Artists an, denen du folgst, deine Top Artists und deine gespeicherte Musik an. Nie deinen Hörverlauf, nie deine E Mail. Während der Testphase auf eine kleine Zahl verbundener Accounts begrenzt.",
       manualTitle: "Artists suchen",
       manualBody:
-        "Suche und wähle selbst mindestens drei Artists aus — wir schlagen dir dabei direkt ähnliche vor. Kein Konto nötig, kein Limit.",
+        "Suche und wähle selbst mindestens drei Artists aus — wir schlagen dir dabei direkt ähnliche vor.",
       hybridTitle: "Spotify verbinden, dann anpassen",
       hybridBody:
         "Importieren als Ausgangspunkt, danach im nächsten Schritt alles hinzufügen, entfernen und neu einordnen. Gleiches Tester-Limit wie bei Spotify verbinden.",
