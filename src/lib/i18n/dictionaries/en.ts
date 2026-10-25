@@ -124,7 +124,7 @@ export const en = {
     },
     review: {
       eyebrow: "Step 3",
-      title: "Review your taste",
+      title: "Review your taste and prioritize",
       body: "This is how relevant each artist will be to your radar. Change anything. You’re always in control.",
       dontShow: (count: number) => `Don’t show me (${count})`,
       unhide: "Unhide",

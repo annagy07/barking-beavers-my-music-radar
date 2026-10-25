@@ -123,7 +123,7 @@ export const de: Dictionary = {
     },
     review: {
       eyebrow: "Schritt 3",
-      title: "Prüfe deinen Geschmack",
+      title: "Prüfe deinen Geschmack und priorisiere",
       body: "So relevant wird jeder Artist für deinen Radar sein. Änder alles, was du willst. Du hast immer die Kontrolle.",
       dontShow: (count: number) => `Nicht anzeigen (${count})`,
       unhide: "Einblenden",
