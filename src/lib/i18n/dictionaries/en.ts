@@ -96,8 +96,8 @@ export const en = {
     continue: "Continue",
     method: {
       eyebrow: "Step 1",
-      title: "How should we get to know your music taste?",
-      body: "Either way, you review and edit everything before we send you anything.",
+      title: "Tell us about your music taste",
+      body: "Let's find your artists. For best results, pick at least 20 — the more we know, the better your radar works.",
       error: "Couldn’t connect to Spotify. Try again, or choose artists manually below.",
       recommended: "Recommended",
       spotifyTitle: "Connect Spotify",
@@ -105,7 +105,7 @@ export const en = {
         "Read only. We only look at artists you follow, your top artists and your saved music. Never your listening history, never your email. Limited to a small number of connected accounts while this is in testing.",
       manualTitle: "Search for artists",
       manualBody:
-        "Search and pick at least three artists — we'll suggest similar ones as you go. No account needed, no limits.",
+        "Search and pick at least three artists — we'll suggest similar ones as you go.",
       hybridTitle: "Connect Spotify, then customize",
       hybridBody:
         "Import as a starting point, then add, remove and re-rank anything on the next screen. Same tester limit as Connect Spotify.",
@@ -124,7 +124,7 @@ export const en = {
     },
     review: {
       eyebrow: "Step 3",
-      title: "Review your taste",
+      title: "Review your taste and prioritize",
       body: "This is how relevant each artist will be to your radar. Change anything. You’re always in control.",
       dontShow: (count: number) => `Don’t show me (${count})`,
       unhide: "Unhide",
