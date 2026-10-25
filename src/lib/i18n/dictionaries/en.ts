@@ -96,8 +96,8 @@ export const en = {
     continue: "Continue",
     method: {
       eyebrow: "Step 1",
-      title: "How should we get to know your music taste?",
-      body: "Either way, you review and edit everything before we send you anything.",
+      title: "Tell us about your music taste",
+      body: "Search and pick your artists — you review and edit everything before we send you anything.",
       error: "Couldn’t connect to Spotify. Try again, or choose artists manually below.",
       recommended: "Recommended",
       spotifyTitle: "Connect Spotify",
