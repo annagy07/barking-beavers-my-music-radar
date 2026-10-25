@@ -96,7 +96,7 @@ export const de: Dictionary = {
     method: {
       eyebrow: "Schritt 1",
       title: "Erzähl uns von deinem Musikgeschmack",
-      body: "Du prüfst und änderst alles, bevor wir dir irgendetwas schicken.",
+      body: "Lass uns deine Artists finden. Für beste Ergebnisse wähl mindestens 20 aus — je mehr wir wissen, desto besser funktioniert dein Radar.",
       error: "Verbindung zu Spotify fehlgeschlagen. Versuch es nochmal oder wähle Artists unten manuell aus.",
       recommended: "Empfohlen",
       spotifyTitle: "Spotify verbinden",

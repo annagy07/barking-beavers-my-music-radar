@@ -97,7 +97,7 @@ export const en = {
     method: {
       eyebrow: "Step 1",
       title: "Tell us about your music taste",
-      body: "You review and edit everything before we send you anything.",
+      body: "Let's find your artists. For best results, pick at least 20 — the more we know, the better your radar works.",
       error: "Couldn’t connect to Spotify. Try again, or choose artists manually below.",
       recommended: "Recommended",
       spotifyTitle: "Connect Spotify",
