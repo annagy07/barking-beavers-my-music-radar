@@ -3,6 +3,11 @@
 import { Eyebrow } from "@/components/ui/Container";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 
+// Spotify's app is still in Development Mode (capped at 25 manually-approved
+// users), so "Connect Spotify" can't yet handle real onboarding traffic.
+// Flip this to true to bring both Spotify options back once that's resolved.
+const SHOW_SPOTIFY_CONNECT = false;
+
 export function StepMethod({
   error,
   onChooseManual,
@@ -42,28 +47,34 @@ export function StepMethod({
           <p className="mt-1 text-sm opacity-80">{s.manualBody}</p>
         </button>
 
-        <a
-          href="/api/spotify/authorize"
-          className="block border border-ink p-6 text-left transition-colors hover:border-accent hover:text-accent"
-        >
-          <h2 className="font-display text-xl font-semibold">
-            {s.spotifyTitle}
-          </h2>
-          <p className="mt-1 text-sm text-ink-soft">{s.spotifyBody}</p>
-        </a>
+        {SHOW_SPOTIFY_CONNECT && (
+          <>
+            <a
+              href="/api/spotify/authorize"
+              className="block border border-ink p-6 text-left transition-colors hover:border-accent hover:text-accent"
+            >
+              <h2 className="font-display text-xl font-semibold">
+                {s.spotifyTitle}
+              </h2>
+              <p className="mt-1 text-sm text-ink-soft">{s.spotifyBody}</p>
+            </a>
 
-        <a
-          href="/api/spotify/authorize"
-          className="block border border-line p-6 text-left transition-colors hover:border-accent hover:text-accent"
-        >
-          <h2 className="font-display text-xl font-semibold">
-            {s.hybridTitle}
-          </h2>
-          <p className="mt-1 text-sm text-ink-soft">{s.hybridBody}</p>
-        </a>
+            <a
+              href="/api/spotify/authorize"
+              className="block border border-line p-6 text-left transition-colors hover:border-accent hover:text-accent"
+            >
+              <h2 className="font-display text-xl font-semibold">
+                {s.hybridTitle}
+              </h2>
+              <p className="mt-1 text-sm text-ink-soft">{s.hybridBody}</p>
+            </a>
+          </>
+        )}
       </div>
 
-      <p className="mt-6 text-xs text-ink-soft">{s.mockNotice}</p>
+      {SHOW_SPOTIFY_CONNECT && (
+        <p className="mt-6 text-xs text-ink-soft">{s.mockNotice}</p>
+      )}
     </div>
   );
 }
