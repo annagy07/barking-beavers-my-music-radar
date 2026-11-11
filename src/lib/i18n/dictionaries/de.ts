@@ -114,7 +114,9 @@ export const de: Dictionary = {
     artists: {
       eyebrow: "Schritt 2",
       title: "Wähle mindestens drei Artists",
-      body: "Durchsuche Indie, Pop, Elektronik, Hip Hop, Alternative und Rock. Wie relevant jeder einzelne ist, legst du im nächsten Schritt fest.",
+      body: "Suche Artists nach Namen — unser Katalog deckt Indie, Pop, Elektronik, Hip Hop, Alternative, Rock und mehr ab. Wie relevant jeder einzelne ist, legst du im nächsten Schritt fest.",
+      recommendedHint:
+        "Für beste Ergebnisse empfehlen wir mindestens 15–20 Artists — je mehr wir wissen, desto besser funktioniert dein Radar.",
       selected: (count: number) => `Ausgewählt: ${count}/3 mindestens`,
       empty: "Noch nichts. Suche oben, um loszulegen.",
       pickMore: (count: number) => `Wähle noch ${count} weitere, um fortzufahren.`,
@@ -207,7 +209,7 @@ export const de: Dictionary = {
     },
   },
   artistSearch: {
-    placeholder: "Artists suchen (probier „indie“, „rock“, einen Namen…)",
+    placeholder: "Nach einem Artist-Namen suchen…",
     searching: "Suche läuft…",
     noMatches: "Keine Treffer.",
     addManually: (query: string) => `Nicht gefunden? „${query}“ manuell hinzufügen`,

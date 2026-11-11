@@ -115,7 +115,9 @@ export const en = {
     artists: {
       eyebrow: "Step 2",
       title: "Choose at least three artists",
-      body: "Search across indie, pop, electronic, hip-hop, alternative and rock. You’ll set how relevant each one is on the next screen.",
+      body: "Search for artists by name — our catalog spans indie, pop, electronic, hip-hop, alternative, rock and more. You’ll set how relevant each one is on the next screen.",
+      recommendedHint:
+        "For best results, we recommend picking at least 15–20 artists — the more we know, the better your radar works.",
       selected: (count: number) => `Selected: ${count}/3 minimum`,
       empty: "Nothing yet. Search above to get started.",
       pickMore: (count: number) => `Pick ${count} more to continue.`,
@@ -208,7 +210,7 @@ export const en = {
     },
   },
   artistSearch: {
-    placeholder: "Search artists (try “indie”, “rock”, a name…)",
+    placeholder: "Search for an artist by name…",
     searching: "Searching…",
     noMatches: "No matches.",
     addManually: (query: string) => `Can’t find them? Add “${query}” manually`,
