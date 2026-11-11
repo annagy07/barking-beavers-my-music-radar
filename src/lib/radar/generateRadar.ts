@@ -31,6 +31,20 @@ const LOOKAHEAD_RELEVANT_TYPES = new Set(["concert", "tour", "presale"]);
 // a sync happened to backfill — independent of the 90-day cutoff
 // spotifyReleases.ts already applies at sync time.
 const RELEASE_MAX_AGE_DAYS = 60;
+// "Just Released" always wants at least this many items — if the artists a
+// user follows haven't put anything out recently, it falls back to releases
+// from artists related to ones they follow (the same relation graph
+// Discovery Mode's "You like X" reasoning uses) rather than showing a thin
+// or empty section.
+const MIN_JUST_RELEASED = 3;
+
+function compareItems(a: RadarItem, b: RadarItem): number {
+  if (b.score !== a.score) return b.score - a.score;
+  const publishedDiff =
+    new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+  if (publishedDiff !== 0) return publishedDiff;
+  return a.id.localeCompare(b.id); // stable, deterministic tiebreak
+}
 
 function parseGenres(json: string): string[] {
   try {
@@ -159,6 +173,11 @@ async function buildRadar(
   let discoveryCount = 0;
 
   const items: RadarItem[] = [];
+  // Candidate "Just Released" items from artists related to (but not
+  // themselves) followed — only used to top up the section if followed
+  // artists alone don't reach MIN_JUST_RELEASED. See buildSections's caller
+  // below.
+  const relatedReleaseItems: RadarItem[] = [];
 
   for (const event of events) {
     if (blockedArtistIds.has(event.artistId)) continue;
@@ -202,7 +221,33 @@ async function buildRadar(
     // Everything else only ever surfaces for artists the user explicitly
     // tracks — discovery is the only door for artists they don't follow.
     const artistPref = followed.get(event.artistId);
-    if (!artistPref) continue;
+    if (!artistPref) {
+      // Stash releases from related-but-unfollowed artists as fallback
+      // candidates for "Just Released" — see the backfill after
+      // buildSections below. Same category/age rules as a normal release,
+      // just without requiring the artist itself to be followed.
+      if (event.type === "release") {
+        const reason = discoveryReason.get(event.artistId);
+        if (reason && matchCategory(event.type, event.subtype)) {
+          const ageDays =
+            (now.getTime() - event.publishedAt.getTime()) / (1000 * 60 * 60 * 24);
+          if (ageDays <= RELEASE_MAX_AGE_DAYS) {
+            let score = SCORE_GENRE_OR_RELATION_MATCH + SCORE_CATEGORY_ENABLED;
+            const reasons = [reason];
+            if (isFresh(event.publishedAt, now)) {
+              score += SCORE_FRESH_ITEM;
+              reasons.push("Freshly surfaced.");
+            }
+            if (isTrustedSource(event.credibilityScore)) {
+              score += SCORE_TRUSTED_SOURCE;
+              reasons.push(`Trusted source: ${event.source.name}.`);
+            }
+            relatedReleaseItems.push(toRadarItem(event, score, reasons));
+          }
+        }
+      }
+      continue;
+    }
 
     const categoryId = matchCategory(event.type, event.subtype);
     if (!categoryId) continue; // content type disabled by the user
@@ -258,13 +303,8 @@ async function buildRadar(
     items.push(toRadarItem(event, score, reasons));
   }
 
-  items.sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score;
-    const publishedDiff =
-      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
-    if (publishedDiff !== 0) return publishedDiff;
-    return a.id.localeCompare(b.id); // stable, deterministic tiebreak
-  });
+  items.sort(compareItems);
+  relatedReleaseItems.sort(compareItems);
 
   // Cap per section FIRST, then flatten — capping the flat list to a fixed
   // total first (as this used to) let one dominant category (e.g.
@@ -274,6 +314,23 @@ async function buildRadar(
   // qualifying items of their own. Sectioning first guarantees every
   // enabled category gets up to MAX_PER_SECTION items if it has any.
   const sections = buildSections(items);
+
+  if (sections.justReleased.length < MIN_JUST_RELEASED) {
+    const seenArtistIds = new Set(sections.justReleased.map((i) => i.artistId));
+    for (const candidate of relatedReleaseItems) {
+      if (sections.justReleased.length >= MIN_JUST_RELEASED) break;
+      if (seenArtistIds.has(candidate.artistId)) continue;
+      seenArtistIds.add(candidate.artistId);
+      sections.justReleased.push({
+        ...candidate,
+        reasons: [
+          ...candidate.reasons,
+          "Shown because the artists you follow haven't released anything recently.",
+        ],
+      });
+    }
+  }
+
   const capped = (Object.keys(sections) as (keyof RadarSections)[]).flatMap(
     (key) => sections[key],
   );
