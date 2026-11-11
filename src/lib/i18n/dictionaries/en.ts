@@ -162,8 +162,6 @@ export const en = {
     frequency: {
       eyebrow: "Step 6",
       title: "How often should we reach out?",
-      presaleLabel: "Always alert me about presales for essential artists.",
-      presaleBody: "Sent outside your regular schedule so you never miss a window.",
     },
     email: {
       eyebrow: "Step 7",
@@ -193,7 +191,6 @@ export const en = {
         `Within ${radius} km of ${cities}, looking ${days} days ahead`,
       noCity: "No cities set",
       delivery: "Delivery",
-      deliveryPresaleSuffix: " + instant presale alerts",
       email: "Email",
       notSet: "Not set",
     },
@@ -278,7 +275,6 @@ export const en = {
     km: "km",
     days: "days",
     newsletter: "Newsletter",
-    presaleLabel: "Always alert me about presales for essential artists.",
     saved: "Saved",
   },
   settings: {

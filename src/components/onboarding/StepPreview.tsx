@@ -38,7 +38,6 @@ export function StepPreview({
         cities: state.cities,
         concertRadiusKm: state.concertRadiusKm,
         concertLookaheadDays: state.concertLookaheadDays,
-        instantPresaleAlerts: state.instantPresaleAlerts,
       }),
     })
       .then((res) => res.json())

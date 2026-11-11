@@ -93,7 +93,6 @@ async function main() {
       concertRadiusKm: 100,
       concertLookaheadDays: 90,
       newsletterFrequency: "weekly",
-      instantPresaleAlerts: true,
     },
   });
 

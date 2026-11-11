@@ -21,7 +21,6 @@ interface PreferencesData {
   concertRadiusKm: number;
   concertLookaheadDays: number;
   newsletterFrequency: NewsletterFrequencyId;
-  instantPresaleAlerts: boolean;
 }
 
 export function PreferencesManager({ initial }: { initial: PreferencesData }) {
@@ -240,20 +239,6 @@ export function PreferencesManager({ initial }: { initial: PreferencesData }) {
             </button>
           ))}
         </div>
-
-        <label className="mt-4 flex cursor-pointer items-start gap-3 border border-line p-4">
-          <input
-            type="checkbox"
-            checked={data.instantPresaleAlerts}
-            onChange={(e) => {
-              const v = e.target.checked;
-              setData((d) => ({ ...d, instantPresaleAlerts: v }));
-              save({ instantPresaleAlerts: v });
-            }}
-            className="mt-0.5 h-4 w-4 accent-[var(--color-accent)]"
-          />
-          <span className="text-sm">{t.preferences.presaleLabel}</span>
-        </label>
       </section>
 
       <p

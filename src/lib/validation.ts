@@ -35,7 +35,6 @@ export const onboardingSubmitSchema = z.object({
     .number()
     .refine((v) => (CONCERT_LOOKAHEAD_DAYS as readonly number[]).includes(v)),
   newsletterFrequency: z.enum(["weekly", "biweekly", "monthly"]),
-  instantPresaleAlerts: z.boolean(),
   email: z.string().trim().email("Enter a valid email"),
   consent: z.literal(true, {
     message: "You must opt in to receive the newsletter",
@@ -53,7 +52,6 @@ export const draftRadarSchema = z.object({
   cities: z.array(z.string().trim()),
   concertRadiusKm: z.number(),
   concertLookaheadDays: z.number(),
-  instantPresaleAlerts: z.boolean(),
 });
 
 export type DraftRadarPayload = z.infer<typeof draftRadarSchema>;

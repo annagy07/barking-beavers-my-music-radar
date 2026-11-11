@@ -241,7 +241,6 @@ export function OnboardingWizard() {
         concertRadiusKm: state.concertRadiusKm,
         concertLookaheadDays: state.concertLookaheadDays,
         newsletterFrequency: state.newsletterFrequency,
-        instantPresaleAlerts: state.instantPresaleAlerts,
         email: state.email,
         consent: state.consent as true,
       });
@@ -327,9 +326,7 @@ export function OnboardingWizard() {
       {step === "frequency" && (
         <StepFrequency
           newsletterFrequency={state.newsletterFrequency}
-          instantPresaleAlerts={state.instantPresaleAlerts}
           onFrequency={(newsletterFrequency) => update({ newsletterFrequency })}
-          onPresaleAlerts={(instantPresaleAlerts) => update({ instantPresaleAlerts })}
         />
       )}
 
