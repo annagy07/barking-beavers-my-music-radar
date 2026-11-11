@@ -56,24 +56,53 @@ async function followedArtists(): Promise<Artist[]> {
   return db.artist.findMany({ where: { userPreferences: { some: { blocked: false } } } });
 }
 
+/** Artists connected via ArtistRelation to a followed artist, but not
+ * themselves followed. Syncing their releases too (see syncSpotifyContent)
+ * is what lets generateRadar.ts's "Just Released" fallback show something
+ * real instead of nothing when followed artists haven't put anything out
+ * recently. */
+async function relatedButUnfollowedArtists(followed: Artist[]): Promise<Artist[]> {
+  if (followed.length === 0) return [];
+  const followedIds = new Set(followed.map((a) => a.id));
+
+  const relations = await db.artistRelation.findMany({
+    where: {
+      OR: [
+        { fromArtistId: { in: [...followedIds] } },
+        { toArtistId: { in: [...followedIds] } },
+      ],
+    },
+    include: { fromArtist: true, toArtist: true },
+  });
+
+  const related = new Map<string, Artist>();
+  for (const rel of relations) {
+    for (const candidate of [rel.fromArtist, rel.toArtist]) {
+      if (!followedIds.has(candidate.id)) related.set(candidate.id, candidate);
+    }
+  }
+  return [...related.values()];
+}
+
 async function syncPerArtistSource(
   enabled: boolean,
   syncOne: (db: PrismaClient, artist: Artist) => Promise<SyncResult>,
   concurrency: number = ARTIST_CONCURRENCY,
   requestDelayMs = 0,
+  artists?: Artist[],
 ): Promise<SourceSyncResult> {
   const result: SourceSyncResult = { enabled, artistsProcessed: 0, created: 0, errors: [] };
   if (!enabled) return result;
 
-  const artists = await followedArtists();
-  result.artistsProcessed = artists.length;
+  const resolvedArtists = artists ?? (await followedArtists());
+  result.artistsProcessed = resolvedArtists.length;
 
   const deadline = Date.now() + ROUTE_TIME_BUDGET_MS;
   let skipped = 0;
   let consecutiveRateLimits = 0;
   let circuitOpen = false;
 
-  await mapWithConcurrency(artists, concurrency, async (artist) => {
+  await mapWithConcurrency(resolvedArtists, concurrency, async (artist) => {
     if (circuitOpen || Date.now() >= deadline) {
       skipped++;
       return;
@@ -110,12 +139,25 @@ async function syncPerArtistSource(
 // budget — combining all four sources across 100+ followed artists in one
 // invocation reliably exceeded Vercel's function duration limit.
 
-export function syncSpotifyContent(): Promise<SourceSyncResult> {
+export async function syncSpotifyContent(): Promise<SourceSyncResult> {
+  const enabled = isSpotifyContentSyncConfigured();
+  if (!enabled) {
+    return { enabled, artistsProcessed: 0, created: 0, errors: [] };
+  }
+
+  // Followed artists go first so they always get priority within the route's
+  // time budget — related artists are purely a fallback source for "Just
+  // Released" (see generateRadar.ts) and are fine being picked up a day
+  // later if there's no time left for them this run.
+  const followed = await followedArtists();
+  const related = await relatedButUnfollowedArtists(followed);
+
   return syncPerArtistSource(
-    isSpotifyContentSyncConfigured(),
+    enabled,
     syncSpotifyReleasesForArtist,
     SPOTIFY_CONCURRENCY,
     SPOTIFY_REQUEST_DELAY_MS,
+    [...followed, ...related],
   );
 }
 

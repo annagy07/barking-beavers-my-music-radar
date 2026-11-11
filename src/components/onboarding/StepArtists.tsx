@@ -26,6 +26,10 @@ export function StepArtists({
       </h1>
       <p className="mt-3 text-ink-soft">{s.body}</p>
 
+      <p className="mt-4 border-2 border-ink bg-accent/10 px-4 py-3 text-sm font-medium text-ink">
+        {s.recommendedHint}
+      </p>
+
       <div className="mt-6">
         <ArtistSearch
           onPick={onAdd}
