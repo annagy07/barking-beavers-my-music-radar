@@ -161,8 +161,6 @@ export const de: Dictionary = {
     frequency: {
       eyebrow: "Schritt 6",
       title: "Wie oft sollen wir uns melden?",
-      presaleLabel: "Mich immer über Vorverkäufe für essenzielle Artists benachrichtigen.",
-      presaleBody: "Wird außerhalb deines regulären Zeitplans verschickt, damit du kein Zeitfenster verpasst.",
     },
     email: {
       eyebrow: "Schritt 7",
@@ -192,7 +190,6 @@ export const de: Dictionary = {
         `Innerhalb von ${radius} km um ${cities}, ${days} Tage im Voraus`,
       noCity: "Keine Städte festgelegt",
       delivery: "Zustellung",
-      deliveryPresaleSuffix: " + sofortige Vorverkaufsbenachrichtigung",
       email: "E Mail",
       notSet: "Nicht festgelegt",
     },
@@ -277,7 +274,6 @@ export const de: Dictionary = {
     km: "km",
     days: "Tage",
     newsletter: "Newsletter",
-    presaleLabel: "Mich immer über Vorverkäufe für essenzielle Artists benachrichtigen.",
     saved: "Gespeichert",
   },
   settings: {

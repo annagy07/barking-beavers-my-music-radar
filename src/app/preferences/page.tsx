@@ -44,7 +44,6 @@ export default async function PreferencesPage() {
                 concertLookaheadDays: preference.concertLookaheadDays,
                 newsletterFrequency:
                   preference.newsletterFrequency as NewsletterFrequencyId,
-                instantPresaleAlerts: preference.instantPresaleAlerts,
               }}
             />
           </div>

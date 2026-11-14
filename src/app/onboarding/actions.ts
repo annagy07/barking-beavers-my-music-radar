@@ -77,7 +77,6 @@ export async function submitOnboarding(
       concertRadiusKm: data.concertRadiusKm,
       concertLookaheadDays: data.concertLookaheadDays,
       newsletterFrequency: data.newsletterFrequency,
-      instantPresaleAlerts: data.instantPresaleAlerts,
     },
     update: {
       contentCategories: JSON.stringify(data.contentCategories),
@@ -86,7 +85,6 @@ export async function submitOnboarding(
       concertRadiusKm: data.concertRadiusKm,
       concertLookaheadDays: data.concertLookaheadDays,
       newsletterFrequency: data.newsletterFrequency,
-      instantPresaleAlerts: data.instantPresaleAlerts,
     },
   });
 

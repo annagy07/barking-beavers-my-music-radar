@@ -93,7 +93,7 @@ export function StepConfirm({
         />
         <Row
           label={s.delivery}
-          value={`${frequencyLabel}${state.instantPresaleAlerts ? s.deliveryPresaleSuffix : ""}`}
+          value={frequencyLabel}
           editLabel={s.edit}
           onEdit={() => onJump("frequency")}
         />

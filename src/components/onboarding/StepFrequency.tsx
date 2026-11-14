@@ -6,14 +6,10 @@ import { useLocale } from "@/components/i18n/LocaleProvider";
 
 export function StepFrequency({
   newsletterFrequency,
-  instantPresaleAlerts,
   onFrequency,
-  onPresaleAlerts,
 }: {
   newsletterFrequency: NewsletterFrequencyId;
-  instantPresaleAlerts: boolean;
   onFrequency: (f: NewsletterFrequencyId) => void;
-  onPresaleAlerts: (v: boolean) => void;
 }) {
   const { t } = useLocale();
   const s = t.onboarding.frequency;
@@ -53,20 +49,6 @@ export function StepFrequency({
           );
         })}
       </div>
-
-      <label className="mt-8 flex cursor-pointer items-start gap-3 border border-line p-5">
-        <input
-          type="checkbox"
-          checked={instantPresaleAlerts}
-          onChange={(e) => onPresaleAlerts(e.target.checked)}
-          className="mt-0.5 h-4 w-4 accent-[var(--color-accent)]"
-        />
-        <span className="text-sm">
-          <span className="font-medium">{s.presaleLabel}</span>
-          <br />
-          <span className="text-ink-soft">{s.presaleBody}</span>
-        </span>
-      </label>
     </div>
   );
 }

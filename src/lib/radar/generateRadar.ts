@@ -60,7 +60,6 @@ export interface RadarPreferenceInput {
   cities: string[];
   concertRadiusKm: number;
   concertLookaheadDays: number;
-  instantPresaleAlerts: boolean;
 }
 
 /** The closest of the user's chosen cities to a concert's venue city, or
@@ -285,12 +284,6 @@ async function buildRadar(
       );
     }
 
-    if (event.type === "presale" && preference.instantPresaleAlerts && relevance === "essential") {
-      reasons.push(
-        "You asked to always be alerted about presales for essential artists.",
-      );
-    }
-
     if (isFresh(event.publishedAt, now)) {
       score += SCORE_FRESH_ITEM;
       reasons.push("Published in the last week.");
@@ -378,7 +371,6 @@ export async function generatePersonalizedRadar(
       cities: JSON.parse(preference.cities) as string[],
       concertRadiusKm: preference.concertRadiusKm,
       concertLookaheadDays: preference.concertLookaheadDays,
-      instantPresaleAlerts: preference.instantPresaleAlerts,
     },
     artistPrefs.map((p) => ({
       artistId: p.artistId,
@@ -396,7 +388,6 @@ export interface DraftRadarInput {
   cities: string[];
   concertRadiusKm: number;
   concertLookaheadDays: number;
-  instantPresaleAlerts: boolean;
 }
 
 /** Same pipeline, for the onboarding preview before an account exists. */
@@ -428,7 +419,6 @@ export async function generateDraftRadar(
       cities: draft.cities,
       concertRadiusKm: draft.concertRadiusKm,
       concertLookaheadDays: draft.concertLookaheadDays,
-      instantPresaleAlerts: draft.instantPresaleAlerts,
     },
     artistEntries,
   );

@@ -32,7 +32,6 @@ export interface WizardState {
   concertRadiusKm: (typeof CONCERT_RADII)[number];
   concertLookaheadDays: (typeof CONCERT_LOOKAHEAD_DAYS)[number];
   newsletterFrequency: NewsletterFrequencyId;
-  instantPresaleAlerts: boolean;
   email: string;
   consent: boolean;
 }
@@ -61,7 +60,6 @@ export const initialWizardState: WizardState = {
   concertRadiusKm: 50,
   concertLookaheadDays: 90,
   newsletterFrequency: "weekly",
-  instantPresaleAlerts: false,
   email: "",
   consent: false,
 };
